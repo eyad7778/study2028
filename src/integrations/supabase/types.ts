@@ -546,6 +546,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      effective_status: {
+        Args: { _s: Database["public"]["Tables"]["subscriptions"]["Row"] }
+        Returns: Database["public"]["Enums"]["subscription_status"]
+      }
       has_access: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
