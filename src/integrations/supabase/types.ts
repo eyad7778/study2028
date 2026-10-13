@@ -14,16 +14,559 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      announcements: {
+        Row: {
+          body: string
+          category: string
+          created_by: string | null
+          id: string
+          pinned: boolean
+          published_at: string
+          title: string
+        }
+        Insert: {
+          body: string
+          category?: string
+          created_by?: string | null
+          id?: string
+          pinned?: boolean
+          published_at?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_by?: string | null
+          id?: string
+          pinned?: boolean
+          published_at?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string
+          ends_at: string | null
+          id: string
+          kind: Database["public"]["Enums"]["event_kind"]
+          location: string | null
+          notes: string | null
+          starts_at: string
+          subject_id: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["event_kind"]
+          location?: string | null
+          notes?: string | null
+          starts_at: string
+          subject_id?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["event_kind"]
+          location?: string | null
+          notes?: string | null
+          starts_at?: string
+          subject_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lectures: {
+        Row: {
+          created_at: string
+          description: string | null
+          external_url: string | null
+          file_path: string | null
+          id: string
+          subject_id: string
+          title: string
+          week: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          external_url?: string | null
+          file_path?: string | null
+          id?: string
+          subject_id: string
+          title: string
+          week?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          external_url?: string | null
+          file_path?: string | null
+          id?: string
+          subject_id?: string
+          title?: string
+          week?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lectures_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_reads: {
+        Row: {
+          notification_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          notification_id: string
+          read_at?: string
+          user_id?: string
+        }
+        Update: {
+          notification_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_reads_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          link: string | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          link?: string | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          link?: string | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      payment_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          method: string
+          receipt_path: string | null
+          reference: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["payment_request_status"]
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          method: string
+          receipt_path?: string | null
+          reference: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_request_status"]
+          user_id?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          method?: string
+          receipt_path?: string | null
+          reference?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_request_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          about_text: string
+          currency: string
+          designer_bio: string
+          designer_contact: string
+          designer_name: string
+          id: number
+          payment_instructions: string
+          payment_methods: Json
+          subscription_days: number
+          subscription_price: number
+          support_email: string
+          support_phone: string
+          support_telegram: string
+          telegram_bot_username: string
+          updated_at: string
+        }
+        Insert: {
+          about_text?: string
+          currency?: string
+          designer_bio?: string
+          designer_contact?: string
+          designer_name?: string
+          id?: number
+          payment_instructions?: string
+          payment_methods?: Json
+          subscription_days?: number
+          subscription_price?: number
+          support_email?: string
+          support_phone?: string
+          support_telegram?: string
+          telegram_bot_username?: string
+          updated_at?: string
+        }
+        Update: {
+          about_text?: string
+          currency?: string
+          designer_bio?: string
+          designer_contact?: string
+          designer_name?: string
+          id?: number
+          payment_instructions?: string
+          payment_methods?: Json
+          subscription_days?: number
+          subscription_price?: number
+          support_email?: string
+          support_phone?: string
+          support_telegram?: string
+          telegram_bot_username?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          level: string | null
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string
+          id: string
+          level?: string | null
+          phone?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          level?: string | null
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subjects: {
+        Row: {
+          code: string | null
+          created_at: string
+          description: string | null
+          id: string
+          level: string | null
+          name: string
+          sort_order: number
+          term: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          level?: string | null
+          name: string
+          sort_order?: number
+          term?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          level?: string | null
+          name?: string
+          sort_order?: number
+          term?: string | null
+        }
+        Relationships: []
+      }
+      subscription_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["subscription_status"] | null
+          id: string
+          note: string | null
+          subscription_id: string
+          to_status: Database["public"]["Enums"]["subscription_status"]
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          from_status?:
+            | Database["public"]["Enums"]["subscription_status"]
+            | null
+          id?: string
+          note?: string | null
+          subscription_id: string
+          to_status: Database["public"]["Enums"]["subscription_status"]
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          from_status?:
+            | Database["public"]["Enums"]["subscription_status"]
+            | null
+          id?: string
+          note?: string | null
+          subscription_id?: string
+          to_status?: Database["public"]["Enums"]["subscription_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          activated_at: string | null
+          activated_by: string | null
+          amount: number | null
+          created_at: string
+          end_at: string | null
+          id: string
+          payment_method: string | null
+          payment_reference: string | null
+          start_at: string | null
+          status: Database["public"]["Enums"]["subscription_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          activated_by?: string | null
+          amount?: number | null
+          created_at?: string
+          end_at?: string | null
+          id?: string
+          payment_method?: string | null
+          payment_reference?: string | null
+          start_at?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          activated_by?: string | null
+          amount?: number | null
+          created_at?: string
+          end_at?: string | null
+          id?: string
+          payment_method?: string | null
+          payment_reference?: string | null
+          start_at?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      telegram_deliveries: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          notification_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          notification_id?: string | null
+          status: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          notification_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telegram_deliveries_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telegram_link_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          token_hash: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          token_hash: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          token_hash?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      telegram_links: {
+        Row: {
+          blocked: boolean
+          chat_id: number
+          last_send_at: string | null
+          last_send_status: string | null
+          linked_at: string
+          telegram_user_id: number
+          telegram_username: string | null
+          user_id: string
+        }
+        Insert: {
+          blocked?: boolean
+          chat_id: number
+          last_send_at?: string | null
+          last_send_status?: string | null
+          linked_at?: string
+          telegram_user_id: number
+          telegram_username?: string | null
+          user_id: string
+        }
+        Update: {
+          blocked?: boolean
+          chat_id?: number
+          last_send_at?: string | null
+          last_send_status?: string | null
+          linked_at?: string
+          telegram_user_id?: number
+          telegram_username?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_access: { Args: { _user_id: string }; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "owner" | "staff" | "student"
+      event_kind: "lecture" | "exam" | "assignment" | "other"
+      payment_request_status: "pending" | "approved" | "rejected"
+      subscription_status:
+        | "pending"
+        | "awaiting_payment"
+        | "active"
+        | "expired"
+        | "suspended"
+        | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +693,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["owner", "staff", "student"],
+      event_kind: ["lecture", "exam", "assignment", "other"],
+      payment_request_status: ["pending", "approved", "rejected"],
+      subscription_status: [
+        "pending",
+        "awaiting_payment",
+        "active",
+        "expired",
+        "suspended",
+        "rejected",
+      ],
+    },
   },
 } as const
