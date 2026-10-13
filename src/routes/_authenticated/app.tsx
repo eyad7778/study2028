@@ -53,7 +53,7 @@ function StudentHome() {
   if (q.error || !q.data) return <div className="grid min-h-screen place-items-center text-destructive">تعذّر تحميل بياناتك. أعد تحميل الصفحة.</div>;
 
   const { profile, sub, tg, roles, ann, events } = q.data;
-  const st = statusLabel[sub?.status ?? "awaiting_payment"];
+  const st = statusLabel[sub?.status ?? "awaiting_payment"] ?? { text: "—", cls: "bg-muted" };
   const isStaff = roles.includes("owner") || roles.includes("staff");
   const active = sub?.status === "active";
 
