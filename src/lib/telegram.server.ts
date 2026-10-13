@@ -18,7 +18,7 @@ export function webhookSecret(): Promise<string> {
   return sha256B64Url(`telegram-webhook:${key}`);
 }
 
-export async function tg<T = unknown>(method: string, body: Record<string, unknown> = {}): Promise<{ ok: boolean; status: number; result?: T; description?: string }> {
+export async function tg<T = unknown>(method: string, body: Record<string, unknown> = {}): Promise<{ ok: boolean; status: number; result?: T | undefined; description?: string | undefined }> {
   const lovable = process.env["LOVABLE_API_KEY"];
   const key = process.env["TELEGRAM_API_KEY"];
   if (!lovable || !key) throw new Error("Telegram is not configured");
