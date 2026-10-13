@@ -16,6 +16,9 @@ import { Route as DesignerRouteImport } from './routes/designer'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
+import { Route as AuthenticatedAppSubscriptionRouteImport } from './routes/_authenticated/app.subscription'
+import { Route as AuthenticatedAppTelegramRouteImport } from './routes/_authenticated/app.telegram'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -52,6 +55,23 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   path: '/app',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppSubscriptionRoute =
+  AuthenticatedAppSubscriptionRouteImport.update({
+    id: '/subscription',
+    path: '/subscription',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppTelegramRoute =
+  AuthenticatedAppTelegramRouteImport.update({
+    id: '/telegram',
+    path: '/telegram',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const ApiPublicTelegramWebhookRoute =
   ApiPublicTelegramWebhookRouteImport.update({
     id: '/api/public/telegram/webhook',
@@ -65,7 +85,10 @@ export interface FileRoutesByFullPath {
   '/designer': typeof DesignerRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/app': typeof AuthenticatedAppRoute
+  '/app': typeof AuthenticatedAppRouteWithChildren
+  '/app/subscription': typeof AuthenticatedAppSubscriptionRoute
+  '/app/telegram': typeof AuthenticatedAppTelegramRoute
+  '/app/': typeof AuthenticatedAppIndexRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -74,7 +97,9 @@ export interface FileRoutesByTo {
   '/designer': typeof DesignerRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/app': typeof AuthenticatedAppRoute
+  '/app/subscription': typeof AuthenticatedAppSubscriptionRoute
+  '/app/telegram': typeof AuthenticatedAppTelegramRoute
+  '/app': typeof AuthenticatedAppIndexRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRoutesById {
@@ -85,7 +110,10 @@ export interface FileRoutesById {
   '/designer': typeof DesignerRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/_authenticated/app': typeof AuthenticatedAppRoute
+  '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
+  '/_authenticated/app/subscription': typeof AuthenticatedAppSubscriptionRoute
+  '/_authenticated/app/telegram': typeof AuthenticatedAppTelegramRoute
+  '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRouteTypes {
@@ -97,6 +125,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/app'
+    | '/app/subscription'
+    | '/app/telegram'
+    | '/app/'
     | '/api/public/telegram/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -105,6 +136,8 @@ export interface FileRouteTypes {
     | '/designer'
     | '/login'
     | '/signup'
+    | '/app/subscription'
+    | '/app/telegram'
     | '/app'
     | '/api/public/telegram/webhook'
   id:
@@ -116,6 +149,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/_authenticated/app'
+    | '/_authenticated/app/subscription'
+    | '/_authenticated/app/telegram'
+    | '/_authenticated/app/'
     | '/api/public/telegram/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -180,6 +216,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/app/': {
+      id: '/_authenticated/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/subscription': {
+      id: '/_authenticated/app/subscription'
+      path: '/subscription'
+      fullPath: '/app/subscription'
+      preLoaderRoute: typeof AuthenticatedAppSubscriptionRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/telegram': {
+      id: '/_authenticated/app/telegram'
+      path: '/telegram'
+      fullPath: '/app/telegram'
+      preLoaderRoute: typeof AuthenticatedAppTelegramRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/api/public/telegram/webhook': {
       id: '/api/public/telegram/webhook'
       path: '/api/public/telegram/webhook'
@@ -190,12 +247,27 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppSubscriptionRoute: typeof AuthenticatedAppSubscriptionRoute
+  AuthenticatedAppTelegramRoute: typeof AuthenticatedAppTelegramRoute
+  AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
+}
+
+const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppSubscriptionRoute: AuthenticatedAppSubscriptionRoute,
+  AuthenticatedAppTelegramRoute: AuthenticatedAppTelegramRoute,
+  AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
+}
+
+const AuthenticatedAppRouteWithChildren =
+  AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAppRoute: typeof AuthenticatedAppRoute
+  AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAppRoute: AuthenticatedAppRoute,
+  AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
