@@ -54,7 +54,7 @@ export const setSubscriptionStatus = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ userId: z.string().uuid(), status: z.enum(["active", "suspended", "expired", "awaiting_payment"]), days: z.number().int().min(1).max(730).optional(), note: z.string().max(300).optional() }).parse(d))
   .handler(async ({ data, context }) => {
     const admin = await assertStaff(context as Ctx);
-    const patch: Record<string, unknown> = { status: data.status };
+    const patch: { status: typeof data.status; start_at?: string; end_at?: string; activated_by?: string; activated_at?: string } = { status: data.status };
     if (data.status === "active") {
       const { data: s } = await admin.from("platform_settings").select("subscription_days").eq("id", 1).single();
       const now = new Date();

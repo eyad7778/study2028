@@ -71,23 +71,10 @@ function StudentHome() {
         <AccessGate status={status} linked={!!tg} />
       ) : feed.isLoading ? <Loading /> : (
         <>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { to: "/app/subjects", icon: BookOpen, label: "المواد", v: feed.data?.subjects },
-              { to: "/app/announcements", icon: Megaphone, label: "الإعلانات", v: feed.data?.ann.length },
-              { to: "/app/schedule", icon: CalendarClock, label: "المواعيد", v: feed.data?.events.length },
-            ].map((x) => (
-              <Link key={x.to} to={x.to} className="rounded-2xl border bg-card p-4 text-center shadow-card hover:border-primary">
-                <x.icon className="mx-auto size-6 text-primary" />
-                <p className="mt-2 text-sm font-semibold">{x.label}</p>
-              </Link>
-            ))}
-          </div>
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <div className="flex items-center justify-between">
                 <h2 className="font-bold">آخر الإعلانات</h2>
-                <Link to="/app/announcements" className="flex items-center text-xs text-primary">الكل <ChevronLeft className="size-4" /></Link>
               </div>
               <ul className="mt-3 divide-y">
                 {feed.data?.ann.length === 0 && <li className="py-3 text-sm text-muted-foreground">لا توجد إعلانات.</li>}
@@ -97,7 +84,6 @@ function StudentHome() {
             <Card>
               <div className="flex items-center justify-between">
                 <h2 className="font-bold">أقرب المواعيد</h2>
-                <Link to="/app/schedule" className="flex items-center text-xs text-primary">الكل <ChevronLeft className="size-4" /></Link>
               </div>
               <ul className="mt-3 divide-y">
                 {feed.data?.events.length === 0 && <li className="py-3 text-sm text-muted-foreground">لا توجد مواعيد قادمة.</li>}
