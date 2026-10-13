@@ -45,7 +45,7 @@ function Index() {
               حياتك الدراسية، <span className="text-primary">في مكان واحد</span>
             </h1>
             <p className="mt-4 max-w-lg text-lg leading-8 text-muted-foreground">
-              Smart Campus يجمع الإعلانات والمحاضرات والمواعيد والإشعارات، ويريحك من فوضى مجموعات WhatsApp وTelegram.
+              Smart Campus يجمع الإعلانات والمحاضرات والمواعيد والإشعارات، ويريحك من فوضى مجموعات الواتساب والتليجرام المتفرقة.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button asChild size="lg"><Link to="/signup">إنشاء حساب مجاني</Link></Button>
