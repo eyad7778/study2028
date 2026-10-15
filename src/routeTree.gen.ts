@@ -15,7 +15,13 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as DesignerRouteImport } from './routes/designer'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminContentRouteImport } from './routes/_authenticated/admin.content'
+import { Route as AuthenticatedAdminMessagesRouteImport } from './routes/_authenticated/admin.messages'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
+import { Route as AuthenticatedAdminStudentsRouteImport } from './routes/_authenticated/admin.students'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAppAnnouncementsRouteImport } from './routes/_authenticated/app.announcements'
 import { Route as AuthenticatedAppNotificationsRouteImport } from './routes/_authenticated/app.notifications'
@@ -55,11 +61,45 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/app',
   path: '/app',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminContentRoute =
+  AuthenticatedAdminContentRouteImport.update({
+    id: '/content',
+    path: '/content',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminMessagesRoute =
+  AuthenticatedAdminMessagesRouteImport.update({
+    id: '/messages',
+    path: '/messages',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminStudentsRoute =
+  AuthenticatedAdminStudentsRouteImport.update({
+    id: '/students',
+    path: '/students',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -120,13 +160,19 @@ export interface FileRoutesByFullPath {
   '/designer': typeof DesignerRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRouteWithChildren
+  '/admin/content': typeof AuthenticatedAdminContentRoute
+  '/admin/messages': typeof AuthenticatedAdminMessagesRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/students': typeof AuthenticatedAdminStudentsRoute
   '/app/announcements': typeof AuthenticatedAppAnnouncementsRoute
   '/app/notifications': typeof AuthenticatedAppNotificationsRoute
   '/app/schedule': typeof AuthenticatedAppScheduleRoute
   '/app/subjects': typeof AuthenticatedAppSubjectsRouteWithChildren
   '/app/subscription': typeof AuthenticatedAppSubscriptionRoute
   '/app/telegram': typeof AuthenticatedAppTelegramRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/app/subjects/$id': typeof AuthenticatedAppSubjectsIdRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
@@ -137,12 +183,17 @@ export interface FileRoutesByTo {
   '/designer': typeof DesignerRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin/content': typeof AuthenticatedAdminContentRoute
+  '/admin/messages': typeof AuthenticatedAdminMessagesRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/students': typeof AuthenticatedAdminStudentsRoute
   '/app/announcements': typeof AuthenticatedAppAnnouncementsRoute
   '/app/notifications': typeof AuthenticatedAppNotificationsRoute
   '/app/schedule': typeof AuthenticatedAppScheduleRoute
   '/app/subjects': typeof AuthenticatedAppSubjectsRouteWithChildren
   '/app/subscription': typeof AuthenticatedAppSubscriptionRoute
   '/app/telegram': typeof AuthenticatedAppTelegramRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/app/subjects/$id': typeof AuthenticatedAppSubjectsIdRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
@@ -155,13 +206,19 @@ export interface FileRoutesById {
   '/designer': typeof DesignerRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
+  '/_authenticated/admin/content': typeof AuthenticatedAdminContentRoute
+  '/_authenticated/admin/messages': typeof AuthenticatedAdminMessagesRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/_authenticated/admin/students': typeof AuthenticatedAdminStudentsRoute
   '/_authenticated/app/announcements': typeof AuthenticatedAppAnnouncementsRoute
   '/_authenticated/app/notifications': typeof AuthenticatedAppNotificationsRoute
   '/_authenticated/app/schedule': typeof AuthenticatedAppScheduleRoute
   '/_authenticated/app/subjects': typeof AuthenticatedAppSubjectsRouteWithChildren
   '/_authenticated/app/subscription': typeof AuthenticatedAppSubscriptionRoute
   '/_authenticated/app/telegram': typeof AuthenticatedAppTelegramRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/app/subjects/$id': typeof AuthenticatedAppSubjectsIdRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
@@ -174,13 +231,19 @@ export interface FileRouteTypes {
     | '/designer'
     | '/login'
     | '/signup'
+    | '/admin'
     | '/app'
+    | '/admin/content'
+    | '/admin/messages'
+    | '/admin/settings'
+    | '/admin/students'
     | '/app/announcements'
     | '/app/notifications'
     | '/app/schedule'
     | '/app/subjects'
     | '/app/subscription'
     | '/app/telegram'
+    | '/admin/'
     | '/app/'
     | '/app/subjects/$id'
     | '/api/public/telegram/webhook'
@@ -191,12 +254,17 @@ export interface FileRouteTypes {
     | '/designer'
     | '/login'
     | '/signup'
+    | '/admin/content'
+    | '/admin/messages'
+    | '/admin/settings'
+    | '/admin/students'
     | '/app/announcements'
     | '/app/notifications'
     | '/app/schedule'
     | '/app/subjects'
     | '/app/subscription'
     | '/app/telegram'
+    | '/admin'
     | '/app'
     | '/app/subjects/$id'
     | '/api/public/telegram/webhook'
@@ -208,13 +276,19 @@ export interface FileRouteTypes {
     | '/designer'
     | '/login'
     | '/signup'
+    | '/_authenticated/admin'
     | '/_authenticated/app'
+    | '/_authenticated/admin/content'
+    | '/_authenticated/admin/messages'
+    | '/_authenticated/admin/settings'
+    | '/_authenticated/admin/students'
     | '/_authenticated/app/announcements'
     | '/_authenticated/app/notifications'
     | '/_authenticated/app/schedule'
     | '/_authenticated/app/subjects'
     | '/_authenticated/app/subscription'
     | '/_authenticated/app/telegram'
+    | '/_authenticated/admin/'
     | '/_authenticated/app/'
     | '/_authenticated/app/subjects/$id'
     | '/api/public/telegram/webhook'
@@ -274,12 +348,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/app': {
       id: '/_authenticated/app'
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/content': {
+      id: '/_authenticated/admin/content'
+      path: '/content'
+      fullPath: '/admin/content'
+      preLoaderRoute: typeof AuthenticatedAdminContentRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/messages': {
+      id: '/_authenticated/admin/messages'
+      path: '/messages'
+      fullPath: '/admin/messages'
+      preLoaderRoute: typeof AuthenticatedAdminMessagesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/students': {
+      id: '/_authenticated/admin/students'
+      path: '/students'
+      fullPath: '/admin/students'
+      preLoaderRoute: typeof AuthenticatedAdminStudentsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/app/': {
       id: '/_authenticated/app/'
@@ -347,6 +463,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminContentRoute: typeof AuthenticatedAdminContentRoute
+  AuthenticatedAdminMessagesRoute: typeof AuthenticatedAdminMessagesRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminStudentsRoute: typeof AuthenticatedAdminStudentsRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminContentRoute: AuthenticatedAdminContentRoute,
+  AuthenticatedAdminMessagesRoute: AuthenticatedAdminMessagesRoute,
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+  AuthenticatedAdminStudentsRoute: AuthenticatedAdminStudentsRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedAppSubjectsRouteChildren {
   AuthenticatedAppSubjectsIdRoute: typeof AuthenticatedAppSubjectsIdRoute
 }
@@ -385,10 +520,12 @@ const AuthenticatedAppRouteWithChildren =
   AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
 }
 
