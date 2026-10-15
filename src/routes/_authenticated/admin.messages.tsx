@@ -29,7 +29,7 @@ function Messages() {
 
   async function submitA(e: FormEvent) {
     e.preventDefault();
-    if (a.title.trim().length < 2 || a.body.trim().length < 2) return toast.error("اكتب العنوان والنص");
+    if (a.title.trim().length < 2 || a.body.trim().length < 2) { toast.error("اكتب العنوان والنص"); return; }
     setBusy(true);
     try {
       const r = await announce({ data: a });
@@ -41,13 +41,13 @@ function Messages() {
   }
   async function submitN(e: FormEvent) {
     e.preventDefault();
-    if (n.title.trim().length < 2 || n.body.trim().length < 2) return toast.error("اكتب العنوان والنص");
+    if (n.title.trim().length < 2 || n.body.trim().length < 2) { toast.error("اكتب العنوان والنص"); return; }
     setBusy(true);
     try {
       let userId: string | null = null;
       if (n.phone.trim()) {
         const { data } = await supabase.from("profiles").select("id").eq("phone", n.phone.trim()).maybeSingle();
-        if (!data) { setBusy(false); return toast.error("لا يوجد طالب بهذا الرقم"); }
+        if (!data) { setBusy(false); toast.error("لا يوجد طالب بهذا الرقم"); return; }
         userId = data.id;
       }
       const r = await notify({ data: { title: n.title, body: n.body, userId, telegram: n.telegram } });

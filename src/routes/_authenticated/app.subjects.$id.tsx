@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/app/subjects/$id")({
 
 export async function openFile(path: string) {
   const { data, error } = await supabase.storage.from("lectures").createSignedUrl(path, 300);
-  if (error || !data) return toast.error("تعذّر فتح الملف");
+  if (error || !data) { toast.error("تعذّر فتح الملف"); return; }
   window.open(data.signedUrl, "_blank", "noopener");
 }
 
@@ -42,7 +42,7 @@ function SubjectPage() {
   return (
     <div>
       <Link to="/app/subjects" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground"><ArrowRight className="size-4" /> كل المواد</Link>
-      <PageTitle title={subject.name} subtitle={subject.description ?? undefined} />
+      <PageTitle title={subject.name} {...(subject.description ? { subtitle: subject.description } : {})} />
       {events.length > 0 && (
         <Card className="mb-4">
           <h2 className="font-bold">مواعيد قادمة</h2>
