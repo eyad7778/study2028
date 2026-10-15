@@ -42,15 +42,15 @@ function SettingsPage() {
   if (!me.data?.isOwner) return <ErrorBox text="الإعدادات متاحة للمالك فقط." />;
 
   async function save() {
-    const price = Number(f.subscription_price), days = Number(f.subscription_days);
-    if (!(price >= 0) || !(days >= 1)) return toast.error("السعر والمدة يجب أن يكونا أرقامًا صحيحة");
+    const price = Number(f["subscription_price"]), days = Number(f["subscription_days"]);
+    if (!(price >= 0) || !(days >= 1)) { toast.error("السعر والمدة يجب أن يكونا أرقامًا صحيحة"); return; }
     setBusy(true);
     const { error } = await supabase.from("platform_settings").update({
       ...f, subscription_price: price, subscription_days: days,
       payment_methods: methods.filter((m) => m.name.trim()) as never,
     }).eq("id", 1);
     setBusy(false);
-    if (error) return toast.error("تعذّر الحفظ");
+    if (error) { toast.error("تعذّر الحفظ"); return; }
     toast.success("تم حفظ الإعدادات");
     qc.invalidateQueries({ queryKey: ["platform_settings"] });
   }
@@ -77,11 +77,11 @@ function SettingsPage() {
           ))}
           <Button variant="outline" size="sm" onClick={() => setMethods([...methods, { name: "", details: "" }])}>إضافة طريقة</Button>
         </div>
-        <div className="mt-4 space-y-1"><Label>تعليمات الدفع</Label><Textarea rows={4} value={f.payment_instructions ?? ""} onChange={(e) => setF({ ...f, payment_instructions: e.target.value })} /></div>
+        <div className="mt-4 space-y-1"><Label>تعليمات الدفع</Label><Textarea rows={4} value={f["payment_instructions"] ?? ""} onChange={(e) => setF({ ...f, payment_instructions: e.target.value })} /></div>
       </Card>
       <Card className="mt-4 space-y-3">
-        <div className="space-y-1"><Label>نص «عن المشروع»</Label><Textarea rows={4} value={f.about_text ?? ""} onChange={(e) => setF({ ...f, about_text: e.target.value })} /></div>
-        <div className="space-y-1"><Label>نبذة المصمم</Label><Textarea rows={3} value={f.designer_bio ?? ""} onChange={(e) => setF({ ...f, designer_bio: e.target.value })} /></div>
+        <div className="space-y-1"><Label>نص «عن المشروع»</Label><Textarea rows={4} value={f["about_text"] ?? ""} onChange={(e) => setF({ ...f, about_text: e.target.value })} /></div>
+        <div className="space-y-1"><Label>نبذة المصمم</Label><Textarea rows={3} value={f["designer_bio"] ?? ""} onChange={(e) => setF({ ...f, designer_bio: e.target.value })} /></div>
       </Card>
       <p className="mt-4 text-sm text-muted-foreground">لتعيين موظفين: من صفحة «الطلاب» اضغط «تعيين موظفًا» بجانب الحساب.</p>
     </div>

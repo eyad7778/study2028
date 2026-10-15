@@ -32,21 +32,21 @@ function Content() {
 
   async function addSubject(e: FormEvent) {
     e.preventDefault();
-    if (subj.name.trim().length < 2) return toast.error("اكتب اسم المادة");
+    if (subj.name.trim().length < 2) { toast.error("اكتب اسم المادة"); return; }
     setBusy(true);
     const { error } = await supabase.from("subjects").insert({ name: subj.name.trim(), code: subj.code || null, level: subj.level || null, term: subj.term || null, sort_order: (subjects.data?.length ?? 0) + 1 });
     if (done("تمت إضافة المادة", error)) setSubj({ name: "", code: "", level: "", term: "" });
   }
   async function addLecture(e: FormEvent) {
     e.preventDefault();
-    if (!lec.subject_id || lec.title.trim().length < 2) return toast.error("اختر المادة واكتب العنوان");
-    if (file && file.size > 50 * 1024 * 1024) return toast.error("الحد الأقصى للملف 50 ميجابايت");
+    if (!lec.subject_id || lec.title.trim().length < 2) { toast.error("اختر المادة واكتب العنوان"); return; }
+    if (file && file.size > 50 * 1024 * 1024) { toast.error("الحد الأقصى للملف 50 ميجابايت"); return; }
     setBusy(true);
     let file_path: string | null = null;
     if (file) {
       const path = `${lec.subject_id}/${Date.now()}-${file.name.replace(/[^\w.-]/g, "_")}`;
       const up = await supabase.storage.from("lectures").upload(path, file);
-      if (up.error) { setBusy(false); return toast.error("تعذّر رفع الملف"); }
+      if (up.error) { setBusy(false); { toast.error("تعذّر رفع الملف"); return; } }
       file_path = path;
     }
     const { error } = await supabase.from("lectures").insert({ subject_id: lec.subject_id, title: lec.title.trim(), week: lec.week ? Number(lec.week) : null, description: lec.description || null, external_url: lec.external_url || null, file_path });
@@ -54,7 +54,7 @@ function Content() {
   }
   async function addEvent(e: FormEvent) {
     e.preventDefault();
-    if (ev.title.trim().length < 2 || !ev.starts_at) return toast.error("اكتب العنوان والموعد");
+    if (ev.title.trim().length < 2 || !ev.starts_at) { toast.error("اكتب العنوان والموعد"); return; }
     setBusy(true);
     const { error } = await supabase.from("events").insert({ title: ev.title.trim(), kind: ev.kind as "lecture", starts_at: new Date(ev.starts_at).toISOString(), subject_id: ev.subject_id || null, location: ev.location || null, notes: ev.notes || null });
     if (done("تمت إضافة الموعد", error)) setEv({ ...ev, title: "", starts_at: "", location: "", notes: "" });
