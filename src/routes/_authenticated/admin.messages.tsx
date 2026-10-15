@@ -1,0 +1,113 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useState, type FormEvent } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { announceAndNotify, sendNotification } from "@/lib/staff.functions";
+import { Card, fmtDate, PageTitle } from "@/components/app-ui";
+import { pageMeta } from "@/lib/meta";
+
+export const Route = createFileRoute("/_authenticated/admin/messages")({
+  head: () => pageMeta("الإعلانات والإشعارات", "نشر الإعلانات وإرسال الإشعارات عبر التطبيق و Telegram."),
+  component: Messages,
+});
+
+function Messages() {
+  const qc = useQueryClient();
+  const announce = useServerFn(announceAndNotify);
+  const notify = useServerFn(sendNotification);
+  const [a, setA] = useState({ title: "", body: "", category: "عام", pinned: false, notify: true });
+  const [n, setN] = useState({ title: "", body: "", phone: "", telegram: true });
+  const [busy, setBusy] = useState(false);
+  const anns = useQuery({ queryKey: ["admin-anns"], queryFn: async () => (await supabase.from("announcements").select("*").order("published_at", { ascending: false }).limit(30)).data ?? [] });
+  const deliv = useQuery({ queryKey: ["admin-deliv"], queryFn: async () => (await supabase.from("telegram_deliveries").select("*").neq("status", "sent").order("created_at", { ascending: false }).limit(20)).data ?? [] });
+
+  async function submitA(e: FormEvent) {
+    e.preventDefault();
+    if (a.title.trim().length < 2 || a.body.trim().length < 2) return toast.error("اكتب العنوان والنص");
+    setBusy(true);
+    try {
+      const r = await announce({ data: a });
+      toast.success(`تم النشر · Telegram: ${r.sent} نجح، ${r.failed} فشل`);
+      setA({ ...a, title: "", body: "" });
+      qc.invalidateQueries();
+    } catch (err) { toast.error((err as Error).message); }
+    setBusy(false);
+  }
+  async function submitN(e: FormEvent) {
+    e.preventDefault();
+    if (n.title.trim().length < 2 || n.body.trim().length < 2) return toast.error("اكتب العنوان والنص");
+    setBusy(true);
+    try {
+      let userId: string | null = null;
+      if (n.phone.trim()) {
+        const { data } = await supabase.from("profiles").select("id").eq("phone", n.phone.trim()).maybeSingle();
+        if (!data) { setBusy(false); return toast.error("لا يوجد طالب بهذا الرقم"); }
+        userId = data.id;
+      }
+      const r = await notify({ data: { title: n.title, body: n.body, userId, telegram: n.telegram } });
+      toast.success(`تم الإرسال · Telegram: ${r.sent} نجح، ${r.failed} فشل`);
+      setN({ ...n, title: "", body: "" });
+      qc.invalidateQueries();
+    } catch (err) { toast.error((err as Error).message); }
+    setBusy(false);
+  }
+  async function del(id: string) {
+    if (!confirm("حذف الإعلان؟")) return;
+    await supabase.from("announcements").delete().eq("id", id);
+    qc.invalidateQueries({ queryKey: ["admin-anns"] });
+  }
+
+  return (
+    <div>
+      <PageTitle title="الإعلانات والإشعارات" />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <h2 className="font-bold">إعلان جديد</h2>
+          <form onSubmit={submitA} className="mt-3 space-y-3">
+            <div className="space-y-1"><Label>العنوان</Label><Input value={a.title} onChange={(e) => setA({ ...a, title: e.target.value })} /></div>
+            <div className="space-y-1"><Label>التصنيف</Label><Input value={a.category} onChange={(e) => setA({ ...a, category: e.target.value })} /></div>
+            <div className="space-y-1"><Label>النص</Label><Textarea rows={5} value={a.body} onChange={(e) => setA({ ...a, body: e.target.value })} /></div>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={a.pinned} onChange={(e) => setA({ ...a, pinned: e.target.checked })} /> تثبيت في الأعلى</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={a.notify} onChange={(e) => setA({ ...a, notify: e.target.checked })} /> إشعار المشتركين (التطبيق + Telegram)</label>
+            <Button disabled={busy} className="w-full">نشر</Button>
+          </form>
+        </Card>
+        <Card>
+          <h2 className="font-bold">إشعار مباشر</h2>
+          <form onSubmit={submitN} className="mt-3 space-y-3">
+            <div className="space-y-1"><Label>رقم هاتف طالب (اتركه فارغًا للإرسال لكل المشتركين)</Label><Input dir="ltr" value={n.phone} onChange={(e) => setN({ ...n, phone: e.target.value })} /></div>
+            <div className="space-y-1"><Label>العنوان</Label><Input value={n.title} onChange={(e) => setN({ ...n, title: e.target.value })} /></div>
+            <div className="space-y-1"><Label>النص</Label><Textarea rows={4} value={n.body} onChange={(e) => setN({ ...n, body: e.target.value })} /></div>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={n.telegram} onChange={(e) => setN({ ...n, telegram: e.target.checked })} /> إرسال على Telegram أيضًا</label>
+            <Button disabled={busy} className="w-full">إرسال</Button>
+          </form>
+        </Card>
+      </div>
+      <Card className="mt-4">
+        <h2 className="font-bold">الإعلانات المنشورة</h2>
+        <ul className="mt-2 divide-y text-sm">
+          {(anns.data ?? []).map((x) => (
+            <li key={x.id} className="flex items-center justify-between gap-2 py-2">
+              <span>{x.pinned ? "📌 " : ""}{x.title} <span className="text-muted-foreground">· {fmtDate(x.published_at)}</span></span>
+              <Button size="sm" variant="ghost" onClick={() => del(x.id)}>حذف</Button>
+            </li>
+          ))}
+        </ul>
+      </Card>
+      {(deliv.data ?? []).length > 0 && (
+        <Card className="mt-4">
+          <h2 className="font-bold">آخر رسائل Telegram الفاشلة</h2>
+          <ul className="mt-2 divide-y text-xs">
+            {deliv.data!.map((d) => <li key={d.id} className="py-2">{d.status} · {fmtDate(d.created_at, true)} · {d.error}</li>)}
+          </ul>
+        </Card>
+      )}
+    </div>
+  );
+}
