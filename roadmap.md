@@ -5,4 +5,4 @@
 - [x] Phase 4: student pages (subjects, lectures, announcements, schedule, notifications)
 - [x] Phase 5: admin dashboard
 - [x] Phase 6: PWA installable (Web Push deferred)
-- [ ] Phase 7: acceptance tests + docs
+- [x] Phase 7: acceptance tests (all routes + admin announcement flow) + docs/دليل-الاستخدام.md
