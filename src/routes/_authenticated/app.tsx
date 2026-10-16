@@ -12,8 +12,10 @@ export const Route = createFileRoute("/_authenticated/app")({
 
 const nav = [
   { to: "/app", label: "الرئيسية", icon: Home, exact: true },
-  { to: "/app/subscription", label: "الاشتراك", icon: BookOpen },
-  { to: "/app/telegram", label: "Telegram", icon: Megaphone },
+  { to: "/app/subjects", label: "المواد", icon: BookOpen },
+  { to: "/app/announcements", label: "الإعلانات", icon: Megaphone },
+  { to: "/app/schedule", label: "المواعيد", icon: CalendarClock },
+  { to: "/app/subscription", label: "حسابي", icon: UserRound },
 ] as const;
 
 function AppLayout() {
@@ -50,14 +52,17 @@ function AppLayout() {
             ))}
           </nav>
           <div className="flex items-center gap-1">
-                                    <Button variant="ghost" size="icon" aria-label="تسجيل الخروج" onClick={logout}><LogOut className="size-5" /></Button>
+            {me.data?.isStaff && <Button variant="ghost" size="icon" asChild aria-label="الإدارة"><Link to="/admin"><Shield className="size-5" /></Link></Button>}
+            <Button variant="ghost" size="icon" asChild aria-label="الإشعارات"><Link to="/app/notifications" className="relative"><Bell className="size-5" />{!!unread.data && <span className="absolute -top-0.5 -end-0.5 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] text-primary-foreground">{unread.data}</span>}</Link></Button>
+            <Button variant="ghost" size="icon" asChild aria-label="Telegram"><Link to="/app/telegram"><Megaphone className="size-5" /></Link></Button>
+            <Button variant="ghost" size="icon" aria-label="تسجيل الخروج" onClick={logout}><LogOut className="size-5" /></Button>
           </div>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6 md:py-8">
         <Outlet />
       </main>
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t bg-card md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t bg-card md:hidden">
         {nav.map((n) => (
           <Link key={n.to} to={n.to} activeOptions={{ exact: "exact" in n }} className="flex flex-col items-center gap-1 py-2 text-[11px] text-muted-foreground" activeProps={{ className: "text-primary font-semibold" }}>
             <n.icon className="size-5" />
