@@ -155,13 +155,36 @@ function StudentHome() {
     suspended: "Suspended",
     rejected: "Rejected",
   }[status]);
+  const subjectCount = feed.data?.subjects.length ?? 0;
+  const lectureCount = (feed.data?.subjects ?? []).reduce(
+    (count, subject) =>
+      count + ((subject.lectures as unknown as { count: number }[])?.[0]?.count ?? 0),
+    0,
+  );
+  const newAnnouncementCount = (feed.data?.announcements ?? []).filter(
+    (announcement) => !announcement.read,
+  ).length;
+  const upcomingCount = feed.data?.events.length ?? 0;
+  const summary = [
+    { label: t("المواد", "Subjects"), value: subjectCount, color: "bg-sky-100 text-sky-950 dark:bg-sky-900/40 dark:text-sky-100" },
+    { label: t("المحاضرات", "Lectures"), value: lectureCount, color: "bg-violet-100 text-violet-950 dark:bg-violet-900/40 dark:text-violet-100" },
+    { label: t("إعلانات جديدة", "New announcements"), value: newAnnouncementCount, color: "bg-amber-100 text-amber-950 dark:bg-amber-900/40 dark:text-amber-100" },
+    { label: t("مواعيد قادمة", "Upcoming dates"), value: upcomingCount, color: "bg-rose-100 text-rose-950 dark:bg-rose-900/40 dark:text-rose-100" },
+  ];
 
   return (
     <div className="space-y-6">
-      <section className="border-b pb-5">
-        <p className="text-sm text-muted-foreground">{t("مرحبًا،", "Welcome,")} {profile?.full_name || t("طالب", "student")}</p>
-        <h1 className="mt-1 text-2xl font-bold">{t("لوحتك الدراسية", "Your study dashboard")}</h1>
-        <div className="mt-3 flex flex-wrap gap-2 text-xs">
+      <section className="overflow-hidden rounded-2xl border bg-card shadow-card">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b px-5 py-5">
+          <div>
+            <p className="text-sm text-muted-foreground">{t("مرحبًا،", "Welcome,")} {profile?.full_name || t("طالب", "student")}</p>
+            <h1 className="mt-1 text-2xl font-bold">{t("لوحتك الدراسية", "Your study dashboard")}</h1>
+          </div>
+          <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${statusInfo.cls}`}>
+            {statusText}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2 px-5 py-3 text-xs">
           {departmentName.data && (
             <span className="rounded-full bg-primary-soft px-3 py-1 text-primary">
               {departmentName.data}
@@ -170,9 +193,6 @@ function StudentHome() {
           {profile?.level && (
             <span className="rounded-full bg-muted px-3 py-1">{profile.level}</span>
           )}
-          <span className={`rounded-full px-3 py-1 ${statusInfo.cls}`}>
-            {t("الاشتراك:", "Subscription:")} {statusText}
-          </span>
         </div>
       </section>
 
@@ -213,6 +233,15 @@ function StudentHome() {
         <ErrorBox text={t("تعذّر تحميل بيانات لوحتك. أعد المحاولة.", "Could not load your dashboard. Try again.")} />
       ) : (
         <>
+          <section aria-label={t("ملخص الدراسة", "Study overview")} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {summary.map((item) => (
+              <div key={item.label} className={`rounded-xl border border-transparent p-4 ${item.color}`}>
+                <p className="text-xs font-semibold">{item.label}</p>
+                <p className="mt-1 text-2xl font-extrabold">{item.value}</p>
+              </div>
+            ))}
+          </section>
+
           <section>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-lg font-bold">
@@ -227,31 +256,28 @@ function StudentHome() {
                 <p className="text-sm text-muted-foreground">{t("لم تُضف مواد لقسمك وفرقتك بعد.", "No subjects are available for your department and level yet.")}</p>
               </Card>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {feed.data?.subjects.map((subject) => (
-                  <Card key={subject.id} className="h-full">
-                    <div className="flex items-start gap-3">
-                      <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
-                        <BookOpen className="size-5" />
+              <div className="divide-y rounded-xl border bg-card px-4">
+                {feed.data.subjects.map((subject, index) => (
+                  <Link
+                    key={subject.id}
+                    to="/app/subjects/$id"
+                    params={{ id: subject.id }}
+                    className="flex items-center gap-3 py-3 transition-colors hover:bg-muted/40"
+                  >
+                    <span className={`grid size-10 shrink-0 place-items-center rounded-lg ${["bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200", "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200", "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200"][index % 3]}`}>
+                      <BookOpen className="size-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-semibold">{subject.name}</span>
+                      <span className="mt-1 block text-xs text-muted-foreground">
+                        {[subject.code, subject.level].filter(Boolean).join(" · ") || t("مادة دراسية", "Subject")}
                       </span>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-bold">{subject.name}</h3>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {[subject.code, subject.level].filter(Boolean).join(" · ") ||
-                            t("مادة دراسية", "Subject")}
-                        </p>
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          {(subject.lectures as unknown as { count: number }[])?.[0]?.count ?? 0}{" "}
-                          {t("محاضرة", "lectures")}
-                        </p>
-                        <Button size="sm" variant="outline" className="mt-3" asChild>
-                          <Link to="/app/subjects/$id" params={{ id: subject.id }}>
-                            {t("عرض المادة", "Open subject")} <ChevronLeft className="size-4" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {(subject.lectures as unknown as { count: number }[])?.[0]?.count ?? 0} {t("محاضرة", "lectures")}
+                    </span>
+                    <ChevronLeft className="size-4 shrink-0 text-muted-foreground" />
+                  </Link>
                 ))}
               </div>
             )}
@@ -267,16 +293,14 @@ function StudentHome() {
                   {t("كل الإعلانات", "All announcements")}
                 </Link>
               </div>
-              <div className="space-y-2">
+              <div className="divide-y rounded-xl border bg-card px-4">
                 {!feed.data?.announcements.length && (
-                  <Card>
-                    <p className="text-sm text-muted-foreground">
-                      {t("لا توجد إعلانات مخصصة لك حاليًا.", "There are no announcements for you yet.")}
-                    </p>
-                  </Card>
+                  <p className="py-4 text-sm text-muted-foreground">
+                    {t("لا توجد إعلانات مخصصة لك حاليًا.", "There are no announcements for you yet.")}
+                  </p>
                 )}
                 {feed.data?.announcements.map((announcement) => (
-                  <Card key={announcement.id} className={announcement.read ? "opacity-75" : ""}>
+                  <article key={announcement.id} className={`py-4 ${announcement.read ? "opacity-75" : ""}`}>
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs text-muted-foreground">
                         {announcement.category} · {fmtDate(announcement.published_at)}
@@ -312,7 +336,7 @@ function StudentHome() {
                         </Button>
                       )}
                     </div>
-                  </Card>
+                  </article>
                 ))}
               </div>
             </section>
@@ -325,7 +349,7 @@ function StudentHome() {
                   {t("كل المواعيد", "All dates")}
                 </Link>
               </div>
-              <Card>
+              <div className="rounded-xl border bg-card px-4">
                 <ul className="divide-y">
                   {!feed.data?.events.length && (
                     <li className="py-3 text-sm text-muted-foreground">{t("لا توجد مواعيد قادمة.", "No upcoming events.")}</li>
@@ -347,7 +371,7 @@ function StudentHome() {
                     </li>
                   ))}
                 </ul>
-              </Card>
+              </div>
             </section>
           </div>
 
@@ -361,7 +385,7 @@ function StudentHome() {
                   {t("المواد", "Subjects")}
                 </Link>
               </div>
-              <Card>
+              <div className="rounded-xl border bg-card px-4">
                 <ul className="divide-y">
                   {!feed.data?.resources.length && (
                     <li className="py-3 text-sm text-muted-foreground">
@@ -385,7 +409,7 @@ function StudentHome() {
                     </li>
                   ))}
                 </ul>
-              </Card>
+              </div>
             </section>
             <section>
               <div className="mb-3 flex items-center justify-between">
@@ -396,7 +420,7 @@ function StudentHome() {
                   {t("كل الإشعارات", "All notifications")}
                 </Link>
               </div>
-              <Card>
+              <div className="rounded-xl border bg-card px-4">
                 <ul className="divide-y">
                   {!feed.data?.notifications.length && (
                     <li className="py-3 text-sm text-muted-foreground">{t("لا توجد إشعارات جديدة.", "No new notifications.")}</li>
@@ -428,7 +452,7 @@ function StudentHome() {
                     </li>
                   ))}
                 </ul>
-              </Card>
+              </div>
             </section>
           </div>
         </>
