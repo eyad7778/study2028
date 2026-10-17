@@ -53,17 +53,24 @@ function AppLayout() {
             body: string;
             link: string | null;
           };
-          const browserNotification = new Notification(notification.title, {
-            body: notification.body,
-            icon: "/favicon.ico",
-            tag: notification.id,
-          });
-          browserNotification.onclick = () => {
-            window.focus();
-            window.location.assign(
-              notification.link?.startsWith("/app") ? notification.link : "/app/notifications",
-            );
-          };
+          void navigator.serviceWorker?.getRegistration()
+            .then((registration) => registration?.pushManager.getSubscription() ?? null)
+            .then((subscription) => {
+              // Web Push delivers to the service worker; keep the foreground notification as a fallback.
+              if (subscription) return;
+              const browserNotification = new Notification(notification.title, {
+                body: notification.body,
+                icon: "/favicon.ico",
+                tag: notification.id,
+              });
+              browserNotification.onclick = () => {
+                window.focus();
+                window.location.assign(
+                  notification.link?.startsWith("/app") ? notification.link : "/app/notifications",
+                );
+              };
+            })
+            .catch(() => undefined);
         },
       )
       .subscribe();

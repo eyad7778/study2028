@@ -29,11 +29,13 @@ async function notifyUser(
   actor: string,
 ) {
   const { deliverTelegram, escapeHtml } = await import("@/lib/telegram.server");
+  const { deliverPush } = await import("@/lib/push.server");
   const { data: n } = await admin
     .from("notifications")
     .insert({ user_id: userId, title, body, created_by: actor })
     .select("id")
     .single();
+  if (n?.id) await deliverPush(admin, [userId], { title, body }).catch((e) => console.error(e));
   await deliverTelegram(
     admin,
     [userId],
@@ -226,17 +228,15 @@ export const sendNotification = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error || !n) throw new Error("تعذّر حفظ الإشعار");
-    if (!data.telegram) return { sent: 0, failed: 0 };
     const ids = data.userId
       ? [data.userId]
       : await eligibleTargetUsers(admin, data.targetDepartmentIds, data.targetLevels);
+    const { deliverPush } = await import("@/lib/push.server");
+    const push = await deliverPush(admin, ids, { title: data.title, body: data.body });
+    if (!data.telegram) return { sent: 0, failed: 0, pushSent: push.sent, pushFailed: push.failed, pushConfigured: push.configured };
     const { deliverTelegram, escapeHtml } = await import("@/lib/telegram.server");
-    return deliverTelegram(
-      admin,
-      ids,
-      `<b>${escapeHtml(data.title)}</b>\n${escapeHtml(data.body)}`,
-      n.id,
-    );
+    const telegram = await deliverTelegram(admin, ids, `<b>${escapeHtml(data.title)}</b>\n${escapeHtml(data.body)}`, n.id);
+    return { ...telegram, pushSent: push.sent, pushFailed: push.failed, pushConfigured: push.configured };
   });
 
 export const setStaffRole = createServerFn({ method: "POST" })
@@ -317,7 +317,7 @@ export const announceAndNotify = createServerFn({ method: "POST" })
       target_levels: data.targetLevels,
     });
     if (error) throw new Error("تعذّر نشر الإعلان");
-    if (!data.notify) return { sent: 0, failed: 0 };
+    if (!data.notify) return { sent: 0, failed: 0, pushSent: 0, pushFailed: 0, pushConfigured: false };
     const { data: n, error: notificationError } = await admin
       .from("notifications")
       .insert({
@@ -333,11 +333,13 @@ export const announceAndNotify = createServerFn({ method: "POST" })
       .single();
     if (notificationError || !n) throw new Error("تم نشر الإعلان لكن تعذّر إنشاء إشعاره");
     const ids = await eligibleTargetUsers(admin, data.targetDepartmentIds, data.targetLevels);
+    const { deliverPush } = await import("@/lib/push.server");
+    const push = await deliverPush(admin, ids, {
+      title: `إعلان جديد: ${data.title}`,
+      body: data.body.slice(0, 300),
+      url: "/app/announcements",
+    });
     const { deliverTelegram, escapeHtml } = await import("@/lib/telegram.server");
-    return deliverTelegram(
-      admin,
-      ids,
-      `<b>📢 ${escapeHtml(data.title)}</b>\n${escapeHtml(data.body.slice(0, 900))}`,
-      n.id,
-    );
+    const telegram = await deliverTelegram(admin, ids, `<b>📢 ${escapeHtml(data.title)}</b>\n${escapeHtml(data.body.slice(0, 900))}`, n.id);
+    return { ...telegram, pushSent: push.sent, pushFailed: push.failed, pushConfigured: push.configured };
   });

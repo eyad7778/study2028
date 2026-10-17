@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Bell, BookOpen, CalendarClock, Megaphone, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { usePreferences } from "@/hooks/use-preferences";
+import { getPushConfig, savePushSubscription } from "@/lib/push.functions";
 
 type PermissionState = NotificationPermission | "unsupported";
 
@@ -54,23 +56,70 @@ export function StudentOnboarding({ userId }: { userId: string | null }) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [permission, setPermission] = useState<PermissionState>("unsupported");
+  const [pushState, setPushState] = useState<"idle" | "enabled" | "error">("idle");
+  const [pushError, setPushError] = useState("");
+  const getConfig = useServerFn(getPushConfig);
+  const saveSubscription = useServerFn(savePushSubscription);
 
   useEffect(() => {
     if (!userId) return;
     setOpen(window.localStorage.getItem(`smart-student-tour:${userId}`) !== "done");
     if ("Notification" in window) setPermission(Notification.permission);
-  }, [userId]);
+    if ("Notification" in window && Notification.permission === "granted" && "serviceWorker" in navigator) {
+      void getConfig()
+        .then(async ({ publicKey }) => {
+          if (!publicKey) return;
+          const registration = await navigator.serviceWorker.getRegistration();
+          const subscription = await registration?.pushManager.getSubscription();
+          if (subscription) setPushState("enabled");
+          else {
+            setStep(steps.length - 1);
+            setOpen(true);
+          }
+        })
+        .catch(() => undefined);
+    }
+  }, [getConfig, userId]);
 
   const current = steps[step] ?? steps[0]!;
   const permissionGranted = permission === "granted" || permission === "unsupported";
   const isLastStep = step === steps.length - 1;
 
-  async function requestPermission() {
-    if (!("Notification" in window)) {
-      setPermission("unsupported");
-      return;
+  async function enablePush() {
+    setPushError("");
+    try {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        throw new Error("This browser does not support device push notifications.");
+      }
+      const granted = Notification.permission === "granted"
+        ? "granted"
+        : await Notification.requestPermission();
+      setPermission(granted);
+      if (granted !== "granted") return;
+      const config = await getConfig();
+      if (!config.publicKey) throw new Error("Web Push is not configured on the server yet.");
+      const registration = await navigator.serviceWorker.register("/sw.js");
+      const existing = await registration.pushManager.getSubscription();
+      const publicKey = config.publicKey.replace(/-/g, "+").replace(/_/g, "/");
+      const applicationServerKey = Uint8Array.from(
+        atob(publicKey.padEnd(Math.ceil(publicKey.length / 4) * 4, "=")),
+        (character) => character.charCodeAt(0),
+      );
+      const subscription = existing ?? await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey,
+      });
+      const json = subscription.toJSON();
+      if (!json.keys?.p256dh || !json.keys.auth) throw new Error("Could not read the browser push keys.");
+      await saveSubscription({ data: {
+        endpoint: subscription.endpoint,
+        keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
+      } });
+      setPushState("enabled");
+    } catch (error) {
+      setPushState("error");
+      setPushError(error instanceof Error ? error.message : "Could not enable device notifications.");
     }
-    setPermission(await Notification.requestPermission());
   }
 
   function finish() {
@@ -101,10 +150,14 @@ export function StudentOnboarding({ userId }: { userId: string | null }) {
         {isLastStep && (
           <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
             <p className="text-sm font-medium">
-              {permission === "granted"
+              {pushState === "enabled"
                 ? english
-                  ? "Browser notifications are enabled."
-                  : "إشعارات المتصفح مفعّلة."
+                  ? "Device notifications are connected."
+                  : "تم ربط إشعارات الجهاز بنجاح."
+                : permission === "granted"
+                ? english
+                  ? "Browser permission is granted. Connect this device below to receive notifications when the app is closed."
+                  : "إذن المتصفح مفعّل. اربط هذا الجهاز أدناه لتصلك الإشعارات عند إغلاق التطبيق."
                 : permission === "denied"
                   ? english
                     ? "Notifications are blocked. Change this site's permission in your browser settings, then reload."
@@ -117,12 +170,15 @@ export function StudentOnboarding({ userId }: { userId: string | null }) {
                       ? "Allow browser notifications to continue."
                       : "اسمح بإشعارات المتصفح للمتابعة."}
             </p>
-            {permission !== "granted" && permission !== "unsupported" && (
-              <Button type="button" onClick={requestPermission}>
+            {permission !== "unsupported" && pushState !== "enabled" && (
+              <Button type="button" onClick={enablePush}>
                 <Bell className="size-4" />
-                {english ? "Enable notifications" : "تفعيل الإشعارات"}
+                {permission === "granted"
+                  ? english ? "Connect this device" : "ربط هذا الجهاز"
+                  : english ? "Enable device notifications" : "تفعيل إشعارات الجهاز"}
               </Button>
             )}
+            {pushError && <p role="alert" className="text-sm text-destructive">{pushError}</p>}
           </div>
         )}
 

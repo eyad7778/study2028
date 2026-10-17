@@ -88,7 +88,7 @@ function Messages() {
             .filter(Boolean),
         },
       });
-      toast.success(`تم النشر · Telegram: ${r.sent} نجح، ${r.failed} فشل`);
+      toast.success(`تم النشر · Telegram: ${r.sent} نجح، ${r.failed} فشل · Push: ${r.pushConfigured ? `${r.pushSent} sent` : "not configured"}`);
       setA({ ...a, title: "", body: "" });
       qc.invalidateQueries();
     } catch (err) {
@@ -133,7 +133,7 @@ function Messages() {
                 .filter(Boolean),
         },
       });
-      toast.success(`تم الإرسال · Telegram: ${r.sent} نجح، ${r.failed} فشل`);
+      toast.success(`تم الإرسال · Telegram: ${r.sent} نجح، ${r.failed} فشل · Push: ${r.pushConfigured ? `${r.pushSent} sent` : "not configured"}`);
       setN({ ...n, title: "", body: "" });
       qc.invalidateQueries();
     } catch (err) {
@@ -226,7 +226,7 @@ function Messages() {
                 checked={a.notify}
                 onChange={(e) => setA({ ...a, notify: e.target.checked })}
               />{" "}
-              إشعار المشتركين (التطبيق + Telegram)
+              إشعار المشتركين (التطبيق + الجهاز + Telegram)
             </label>
             <Button disabled={busy} className="w-full">
               نشر
