@@ -12,10 +12,10 @@ import { authErrorAr, isValidEgyptPhone, normalizePhone, phoneToEmail } from "@/
 export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "إنشاء حساب — Smart Campus" },
-      { name: "description", content: "أنشئ حسابك الطلابي في Smart Campus خلال دقيقة." },
-      { property: "og:title", content: "إنشاء حساب — Smart Campus" },
-      { property: "og:description", content: "انضم إلى Smart Campus برقم هاتفك." },
+      { title: "إنشاء حساب — Smart Student" },
+      { name: "description", content: "أنشئ حسابك الطلابي في Smart Student خلال دقيقة." },
+      { property: "og:title", content: "إنشاء حساب — Smart Student" },
+      { property: "og:description", content: "انضم إلى Smart Student برقم هاتفك." },
     ],
   }),
   component: Signup,
@@ -98,7 +98,7 @@ function Signup() {
   return (
     <AuthCard
       title="إنشاء حساب جديد"
-      subtitle="خطوة واحدة وتبدأ رحلتك مع Smart Campus."
+      subtitle="خطوة واحدة وتبدأ رحلتك مع Smart Student."
       footer={
         <>
           لديك حساب بالفعل؟{" "}

@@ -1,5 +1,5 @@
 export function pageMeta(title: string, description: string) {
-  const t = `${title} — Smart Campus`;
+  const t = `${title} — Smart Student`;
   return {
     meta: [
       { title: t },

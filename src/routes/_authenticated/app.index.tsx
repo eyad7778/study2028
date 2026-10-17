@@ -19,7 +19,7 @@ import { AccessGate, Card, ErrorBox, fmtDate, kindLabel, Loading } from "@/compo
 export const Route = createFileRoute("/_authenticated/app/")({
   head: () => ({
     meta: [
-      { title: "لوحتي — Smart Campus" },
+      { title: "لوحتي — Smart Student" },
       { name: "description", content: "ملخص حسابك ومحتواك الدراسي." },
     ],
   }),

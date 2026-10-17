@@ -5,9 +5,9 @@ import { useSettings } from "@/hooks/use-settings";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "عن المشروع — Smart Campus" },
-      { name: "description", content: "تعرّف على فكرة Smart Campus وهدفه في تنظيم الحياة الدراسية للطلاب." },
-      { property: "og:title", content: "عن مشروع Smart Campus" },
+      { title: "عن المشروع — Smart Student" },
+      { name: "description", content: "تعرّف على فكرة Smart Student وهدفه في تنظيم الحياة الدراسية للطلاب." },
+      { property: "og:title", content: "عن مشروع Smart Student" },
       { property: "og:description", content: "تطبيق خدمات طلابية مستقل يجمع المحتوى الدراسي والإعلانات والإشعارات." },
     ],
   }),

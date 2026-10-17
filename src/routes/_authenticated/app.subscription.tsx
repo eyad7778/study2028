@@ -14,10 +14,10 @@ import { Card, ErrorBox, fmtDate, Loading, PageTitle } from "@/components/app-ui
 export const Route = createFileRoute("/_authenticated/app/subscription")({
   head: () => ({
     meta: [
-      { title: "الاشتراك — Smart Campus" },
+      { title: "الاشتراك — Smart Student" },
       { name: "description", content: "سعر الاشتراك وطرق الدفع وحالة طلبك." },
-      { property: "og:title", content: "الاشتراك — Smart Campus" },
-      { property: "og:description", content: "فعّل اشتراكك في Smart Campus." },
+      { property: "og:title", content: "الاشتراك — Smart Student" },
+      { property: "og:description", content: "فعّل اشتراكك في Smart Student." },
     ],
   }),
   component: Subscription,

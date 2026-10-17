@@ -12,10 +12,10 @@ import { Card, ErrorBox, fmtDate, Loading, PageTitle } from "@/components/app-ui
 export const Route = createFileRoute("/_authenticated/app/telegram")({
   head: () => ({
     meta: [
-      { title: "ربط Telegram — Smart Campus" },
+      { title: "ربط Telegram — Smart Student" },
       { name: "description", content: "اربط حسابك بـ Telegram لتصلك الإشعارات." },
-      { property: "og:title", content: "ربط Telegram — Smart Campus" },
-      { property: "og:description", content: "استقبل إشعارات Smart Campus على Telegram." },
+      { property: "og:title", content: "ربط Telegram — Smart Student" },
+      { property: "og:description", content: "استقبل إشعارات Smart Student على Telegram." },
     ],
   }),
   component: TelegramPage,

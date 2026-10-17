@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
         const reply = (t: string) => tg("sendMessage", { chat_id: msg.chat!.id, text: t });
         const m = text.match(/^\/start(?:\s+([A-Za-z0-9_-]{20,64}))?$/);
         if (!m) {
-          await reply("مرحبًا 👋 هذا بوت إشعارات Smart Campus. لربط حسابك افتح صفحة «ربط Telegram» داخل التطبيق واضغط زر الربط.");
+          await reply("مرحبًا 👋 هذا بوت إشعارات Smart Student. لربط حسابك افتح صفحة «ربط Telegram» داخل التطبيق واضغط زر الربط.");
           return Response.json({ ok: true });
         }
         if (!m[1]) {
@@ -69,7 +69,7 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
           await reply("حدث خطأ أثناء الربط، حاول مرة أخرى بعد قليل.");
           return Response.json({ ok: true });
         }
-        await reply("✅ تم ربط حسابك بنجاح! ستصلك إشعارات Smart Campus هنا. يمكنك العودة للتطبيق الآن.");
+        await reply("✅ تم ربط حسابك بنجاح! ستصلك إشعارات Smart Student هنا. يمكنك العودة للتطبيق الآن.");
         return Response.json({ ok: true });
       },
     },

@@ -8,9 +8,9 @@ import hero from "@/assets/hero.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Smart Campus — خدماتك الطلابية في مكان واحد" },
+      { title: "Smart Student — خدماتك الطلابية في مكان واحد" },
       { name: "description", content: "تطبيق خدمات طلابية يجمع الإعلانات والمحاضرات والمواعيد والإشعارات عبر Telegram في مكان واحد." },
-      { property: "og:title", content: "Smart Campus — خدماتك الطلابية في مكان واحد" },
+      { property: "og:title", content: "Smart Student — خدماتك الطلابية في مكان واحد" },
       { property: "og:description", content: "الإعلانات والمحاضرات والمواعيد والإشعارات في تطبيق واحد بدل المجموعات المتفرقة." },
     ],
   }),
@@ -45,14 +45,14 @@ function Index() {
               حياتك الدراسية، <span className="text-primary">في مكان واحد</span>
             </h1>
             <p className="mt-4 max-w-lg text-lg leading-8 text-muted-foreground">
-              Smart Campus يجمع الإعلانات والمحاضرات والمواعيد والإشعارات، ويريحك من فوضى مجموعات الواتساب والتليجرام المتفرقة.
+              Smart Student يجمع الإعلانات والمحاضرات والمواعيد والإشعارات، ويريحك من فوضى مجموعات الواتساب والتليجرام المتفرقة.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button asChild size="lg"><Link to="/signup">إنشاء حساب مجاني</Link></Button>
               <Button asChild size="lg" variant="outline"><Link to="/login">لدي حساب</Link></Button>
             </div>
           </div>
-          <img src={hero} alt="واجهة تطبيق Smart Campus على الهاتف" width={1024} height={896} className="mx-auto w-full max-w-md" />
+          <img src={hero} alt="واجهة تطبيق Smart Student على الهاتف" width={1024} height={896} className="mx-auto w-full max-w-md" />
         </div>
       </section>
 

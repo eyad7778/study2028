@@ -11,9 +11,9 @@ import { authErrorAr, isValidEgyptPhone, normalizePhone, phoneToEmail } from "@/
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "تسجيل الدخول — Smart Campus" },
-      { name: "description", content: "سجّل دخولك إلى Smart Campus برقم هاتفك." },
-      { property: "og:title", content: "تسجيل الدخول — Smart Campus" },
+      { title: "تسجيل الدخول — Smart Student" },
+      { name: "description", content: "سجّل دخولك إلى Smart Student برقم هاتفك." },
+      { property: "og:title", content: "تسجيل الدخول — Smart Student" },
       { property: "og:description", content: "ادخل إلى حسابك الطلابي." },
     ],
   }),

@@ -6,10 +6,10 @@ import { useSettings } from "@/hooks/use-settings";
 export const Route = createFileRoute("/designer")({
   head: () => ({
     meta: [
-      { title: "مصمم التطبيق — Smart Campus" },
-      { name: "description", content: "نبذة عن مصمم ومطوّر تطبيق Smart Campus." },
-      { property: "og:title", content: "مصمم تطبيق Smart Campus" },
-      { property: "og:description", content: "تعرّف على صاحب فكرة Smart Campus ومطوّره." },
+      { title: "مصمم التطبيق — Smart Student" },
+      { name: "description", content: "نبذة عن مصمم ومطوّر تطبيق Smart Student." },
+      { property: "og:title", content: "مصمم تطبيق Smart Student" },
+      { property: "og:description", content: "تعرّف على صاحب فكرة Smart Student ومطوّره." },
     ],
   }),
   component: Designer,

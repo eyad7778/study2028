@@ -9,7 +9,7 @@ export function Logo() {
       <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
         <GraduationCap className="size-5" />
       </span>
-      <span className="text-lg" dir="ltr">Smart Campus</span>
+      <span className="text-lg" dir="ltr">Smart Student</span>
     </Link>
   );
 }
