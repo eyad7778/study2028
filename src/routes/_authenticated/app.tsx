@@ -95,7 +95,7 @@ function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0">
+    <div className="min-h-screen pb-24">
       <header className="sticky top-0 z-30 border-b bg-card/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4">
           <div className="flex min-w-0 items-center gap-3">
@@ -106,19 +106,6 @@ function AppLayout() {
               </span>
             )}
           </div>
-          <nav className="hidden items-center gap-1 md:flex">
-            {nav.map((n) => (
-              <Link
-                key={n.to}
-                to={n.to}
-                activeOptions={{ exact: "exact" in n }}
-                className="rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
-                activeProps={{ className: "bg-primary-soft font-semibold text-accent-foreground" }}
-              >
-                {english ? n.englishLabel : n.label}
-              </Link>
-            ))}
-          </nav>
           <div className="flex items-center gap-1">
             <PreferenceControls />
             {me.data?.isStaff && (
@@ -153,20 +140,22 @@ function AppLayout() {
         <StudentOnboarding userId={me.data?.id ?? null} />
         <Outlet />
       </main>
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t bg-card md:hidden">
-        {nav.map((n) => (
-          <Link
-            key={n.to}
-            to={n.to}
-            activeOptions={{ exact: "exact" in n }}
-            className="flex flex-col items-center gap-1 py-2 text-[11px] text-muted-foreground"
-            activeProps={{ className: "text-primary font-semibold" }}
-          >
-            <n.icon className="size-5" />
-                  {english ? n.englishLabel : n.label}
-          </Link>
-        ))}
-      </nav>
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 shadow-[0_-6px_24px_-18px_rgba(0,0,0,0.35)] backdrop-blur">
+        <nav className="mx-auto grid max-w-5xl grid-cols-6 px-1 md:px-4">
+          {nav.map((n) => (
+            <Link
+              key={n.to}
+              to={n.to}
+              activeOptions={{ exact: "exact" in n }}
+              className="flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted-foreground transition-colors hover:bg-muted/60 md:py-3"
+              activeProps={{ className: "text-primary font-semibold bg-primary-soft/60" }}
+            >
+              <n.icon className="size-5" />
+              <span className="max-w-full truncate px-1">{english ? n.englishLabel : n.label}</span>
+            </Link>
+          ))}
+        </nav>
+      </div>
     </div>
   );
 }

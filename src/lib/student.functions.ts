@@ -4,6 +4,14 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const createTelegramLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      console.error("Telegram linking is missing SUPABASE_SERVICE_ROLE_KEY");
+      return { error: "خدمة ربط Telegram غير مكتملة الإعداد على الخادم. تواصل مع الإدارة." };
+    }
+    if (!process.env["TELEGRAM_API_KEY"]) {
+      console.error("Telegram linking is missing TELEGRAM_API_KEY");
+      return { error: "بوت Telegram غير مهيأ على الخادم. تواصل مع الإدارة." };
+    }
     const { sha256Hex, botUsername } = await import("@/lib/telegram.server");
     const { data: sub } = await context.supabase.from("subscriptions").select("status, end_at").eq("user_id", context.userId).maybeSingle();
     const { data: staff } = await context.supabase.rpc("is_staff", { _user_id: context.userId });

@@ -41,7 +41,15 @@ function TelegramPage() {
   async function link() {
     setErr("");
     setBusy(true);
-    const r = await create().catch(() => ({ error: t("تعذّر الاتصال بالخادم.", "Could not connect to the server.") }));
+    const r = await create().catch((error: unknown) => {
+      console.error("Telegram link request failed", error);
+      const message = error instanceof Error ? error.message : "";
+      if (message.includes("SUPABASE_SERVICE_ROLE_KEY"))
+        return { error: t("خدمة ربط Telegram غير مكتملة الإعداد على الخادم. تواصل مع الإدارة.", "Telegram linking is not configured on the server. Contact the administration.") };
+      if (message.includes("TELEGRAM_API_KEY"))
+        return { error: t("بوت Telegram غير مهيأ على الخادم. تواصل مع الإدارة.", "The Telegram bot is not configured on the server. Contact the administration.") };
+      return { error: t("تعذّر الاتصال بالخادم. أعد المحاولة أو تواصل مع الإدارة.", "Could not reach the server. Try again or contact the administration.") };
+    });
     setBusy(false);
     if ("error" in r && r.error) return setErr(r.error);
     if ("url" in r && r.url) {

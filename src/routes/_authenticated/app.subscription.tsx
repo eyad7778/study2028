@@ -45,8 +45,9 @@ function Subscription() {
   if (!me.data || !settings.data) return <ErrorBox />;
   const s = settings.data;
   const st = statusLabel[me.data.status];
+  const isActive = me.data.status === "active";
   const hasPending = (requests.data ?? []).some((r) => r.status === "pending");
-  const canSubmit = !hasPending && me.data.status !== "suspended";
+  const canSubmit = !isActive && !hasPending && me.data.status !== "suspended";
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -87,17 +88,23 @@ function Subscription() {
         </Card>
       </div>
 
-      <Card className="mt-4">
-        <h2 className="font-bold">{t("طرق الدفع", "Payment methods")}</h2>
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-          {s.payment_methods.map((m) => (
-            <li key={m.name} className="rounded-xl bg-muted px-4 py-3 text-sm"><b>{m.name}</b><span className="block text-muted-foreground" dir="auto">{m.details}</span></li>
-          ))}
-        </ul>
-        <p className="mt-4 whitespace-pre-line text-sm leading-7 text-muted-foreground">{s.payment_instructions}</p>
-      </Card>
+      {isActive ? (
+        <p className="mt-4 rounded-xl bg-success-soft px-4 py-3 text-sm text-success">
+          {t("اشتراكك فعّال؛ لا تحتاج لإرسال بيانات دفع الآن.", "Your subscription is active. You do not need to submit payment details now.")}
+        </p>
+      ) : (
+        <Card className="mt-4">
+          <h2 className="font-bold">{t("طرق الدفع", "Payment methods")}</h2>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {s.payment_methods.map((m) => (
+              <li key={m.name} className="rounded-xl bg-muted px-4 py-3 text-sm"><b>{m.name}</b><span className="block text-muted-foreground" dir="auto">{m.details}</span></li>
+            ))}
+          </ul>
+          <p className="mt-4 whitespace-pre-line text-sm leading-7 text-muted-foreground">{s.payment_instructions}</p>
+        </Card>
+      )}
 
-      {canSubmit ? (
+      {!isActive && canSubmit ? (
         <Card className="mt-4">
           <h2 className="font-bold">{t("إرسال بيانات الدفع", "Submit payment details")}</h2>
           <form onSubmit={submit} className="mt-4 grid gap-4 sm:grid-cols-2" noValidate>
@@ -120,11 +127,11 @@ function Subscription() {
             <Button type="submit" disabled={busy} className="sm:col-span-2">{busy && <Loader2 className="size-4 animate-spin" />} {t("إرسال للمراجعة", "Submit for review")}</Button>
           </form>
         </Card>
-      ) : hasPending && (
+      ) : !isActive && hasPending && (
         <p className="mt-4 rounded-xl bg-warning-soft px-4 py-3 text-sm text-warning">{t("لديك طلب قيد المراجعة. سيصلك إشعار عند البت فيه.", "You have a request under review. You will be notified when it is processed.")}</p>
       )}
 
-      {(requests.data ?? []).length > 0 && (
+      {!isActive && (requests.data ?? []).length > 0 && (
         <Card className="mt-4">
           <h2 className="font-bold">{t("طلباتك السابقة", "Previous requests")}</h2>
           <ul className="mt-3 divide-y text-sm">
