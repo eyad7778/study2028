@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { AuthCard } from "@/components/auth-card";
 import { supabase } from "@/integrations/supabase/client";
 import { authErrorAr, isValidEgyptPhone, normalizePhone, phoneToEmail } from "@/lib/auth";
+import { useText } from "@/hooks/use-preferences";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/signup")({
 
 function Signup() {
   const navigate = useNavigate();
+  const t = useText();
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -57,17 +59,17 @@ function Signup() {
     const p = normalizePhone(form.phone);
     const studentCode = form.studentCode.trim();
     if (name.length < 5 || !name.includes(" "))
-      return setError("اكتب اسمك الكامل (الاسم الأول واسم العائلة على الأقل).");
-    if (!isValidEgyptPhone(p)) return setError("أدخل رقم هاتف مصري صحيح مثل 01012345678.");
+      return setError(t("اكتب اسمك الكامل (الاسم الأول واسم العائلة على الأقل).", "Enter your full name (first and last name)."));
+    if (!isValidEgyptPhone(p)) return setError(t("أدخل رقم هاتف مصري صحيح مثل 01012345678.", "Enter a valid Egyptian phone number, e.g. 01012345678."));
     if (studentCode.length < 2 || studentCode.length > 40)
-      return setError("أدخل كود الطالب الموجود على الكارنيه.");
+      return setError(t("أدخل كود الطالب الموجود على الكارنيه.", "Enter the student code printed on your ID."));
     if (
       !form.departmentId ||
       !departments.data?.some((department) => department.id === form.departmentId)
     )
-      return setError("اختر قسمًا دراسيًا متاحًا.");
-    if (form.password.length < 8) return setError("كلمة المرور يجب ألا تقل عن 8 أحرف.");
-    if (form.password !== form.confirm) return setError("كلمتا المرور غير متطابقتين.");
+      return setError(t("اختر قسمًا دراسيًا متاحًا.", "Choose an available department."));
+    if (form.password.length < 8) return setError(t("كلمة المرور يجب ألا تقل عن 8 أحرف.", "Password must be at least 8 characters."));
+    if (form.password !== form.confirm) return setError(t("كلمتا المرور غير متطابقتين.", "Passwords do not match."));
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email: phoneToEmail(p),
@@ -88,38 +90,38 @@ function Signup() {
         error.message.toLowerCase().includes("student_code") ||
         error.message.toLowerCase().includes("profiles_student_code_unique")
       )
-        return setError("كود الطالب مسجل بالفعل.");
-      return setError(authErrorAr(error.message));
+        return setError(t("كود الطالب مسجل بالفعل.", "This student code is already registered."));
+      return setError(t(authErrorAr(error.message), "Could not create your account. Check your details and try again."));
     }
-    if (!data.session) return setError("تم إنشاء الحساب. سجّل الدخول الآن.");
+    if (!data.session) return setError(t("تم إنشاء الحساب. سجّل الدخول الآن.", "Account created. Sign in to continue."));
     navigate({ to: "/app" });
   }
 
   return (
     <AuthCard
-      title="إنشاء حساب جديد"
-      subtitle="خطوة واحدة وتبدأ رحلتك مع Smart Student."
+      title={t("إنشاء حساب جديد", "Create your account")}
+      subtitle={t("خطوة واحدة وتبدأ رحلتك مع Smart Student.", "One step to get started with Smart Student.")}
       footer={
         <>
-          لديك حساب بالفعل؟{" "}
+          {t("لديك حساب بالفعل؟", "Already have an account?")}{" "}
           <Link to="/login" className="font-semibold text-primary">
-            سجّل الدخول
+            {t("سجّل الدخول", "Sign in")}
           </Link>
         </>
       }
     >
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <div className="space-y-2">
-          <Label htmlFor="name">الاسم الكامل</Label>
+          <Label htmlFor="name">{t("الاسم الكامل", "Full name")}</Label>
           <Input id="name" autoComplete="name" value={form.name} onChange={set("name")} required />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phone">رقم الهاتف</Label>
+          <Label htmlFor="phone">{t("رقم الهاتف", "Phone number")}</Label>
           <Input
             id="phone"
             inputMode="tel"
             dir="ltr"
-            className="text-right"
+            className={t("text-right", "text-left")}
             autoComplete="tel"
             value={form.phone}
             onChange={set("phone")}
@@ -127,13 +129,11 @@ function Signup() {
             required
           />
           <p className="text-xs leading-6 text-muted-foreground">
-            يرجى إدخال رقم الهاتف المرتبط بحساب Telegram الذي تستخدمه، حتى تتمكن من ربط حسابك
-            واستقبال إشعارات المنصة عليه. إدخال الرقم وحده لا يعني اكتمال ربط Telegram؛ ستحتاج إلى
-            الضغط على زر ربط حساب Telegram بعد تفعيل اشتراكك.
+            {t("يرجى إدخال رقم الهاتف المرتبط بحساب Telegram الذي تستخدمه، حتى تتمكن من ربط حسابك واستقبال إشعارات المنصة عليه. إدخال الرقم وحده لا يعني اكتمال ربط Telegram؛ ستحتاج إلى الضغط على زر ربط حساب Telegram بعد تفعيل اشتراكك.", "Use the phone number linked to your Telegram account. You can connect Telegram and receive platform notifications after your subscription is activated.")}
           </p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="student-code">كود الطالب بالكارنيه</Label>
+          <Label htmlFor="student-code">{t("كود الطالب بالكارنيه", "Student ID code")}</Label>
           <Input
             id="student-code"
             value={form.studentCode}
@@ -143,7 +143,7 @@ function Signup() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="department">القسم الدراسي</Label>
+          <Label htmlFor="department">{t("القسم الدراسي", "Department")}</Label>
           <select
             id="department"
             value={form.departmentId}
@@ -154,10 +154,10 @@ function Signup() {
           >
             <option value="">
               {departments.isLoading
-                ? "جارٍ تحميل الأقسام…"
+                ? t("جارٍ تحميل الأقسام…", "Loading departments…")
                 : departments.data?.length
-                  ? "اختر القسم"
-                  : "لا توجد أقسام متاحة حاليًا"}
+                  ? t("اختر القسم", "Choose a department")
+                  : t("لا توجد أقسام متاحة حاليًا", "No departments are currently available")}
             </option>
             {departments.data?.map((department) => (
               <option key={department.id} value={department.id}>
@@ -167,13 +167,13 @@ function Signup() {
           </select>
           {departments.isError && (
             <p role="alert" className="text-xs text-destructive">
-              تعذّر تحميل الأقسام. أعد تحميل الصفحة أو تواصل مع الإدارة.
+              {t("تعذّر تحميل الأقسام. أعد تحميل الصفحة أو تواصل مع الإدارة.", "Could not load departments. Reload the page or contact the administration.")}
             </p>
           )}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="password">كلمة المرور</Label>
+            <Label htmlFor="password">{t("كلمة المرور", "Password")}</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -186,7 +186,7 @@ function Signup() {
               />
               <button
                 type="button"
-                aria-label={showPassword ? "إخفاء كلمة المرور" : "عرض كلمة المرور"}
+                aria-label={showPassword ? t("إخفاء كلمة المرور", "Hide password") : t("عرض كلمة المرور", "Show password")}
                 className="absolute inset-y-0 end-2 text-muted-foreground"
                 onClick={() => setShowPassword(!showPassword)}
               >
@@ -195,7 +195,7 @@ function Signup() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirm">تأكيد كلمة المرور</Label>
+            <Label htmlFor="confirm">{t("تأكيد كلمة المرور", "Confirm password")}</Label>
             <div className="relative">
               <Input
                 id="confirm"
@@ -208,7 +208,7 @@ function Signup() {
               />
               <button
                 type="button"
-                aria-label={showConfirm ? "إخفاء كلمة المرور" : "عرض كلمة المرور"}
+                aria-label={showConfirm ? t("إخفاء كلمة المرور", "Hide password") : t("عرض كلمة المرور", "Show password")}
                 className="absolute inset-y-0 end-2 text-muted-foreground"
                 onClick={() => setShowConfirm(!showConfirm)}
               >
@@ -226,7 +226,7 @@ function Signup() {
           </p>
         )}
         <Button type="submit" className="w-full" size="lg" disabled={loading}>
-          {loading && <Loader2 className="size-4 animate-spin" />} إنشاء حساب
+          {loading && <Loader2 className="size-4 animate-spin" />} {t("إنشاء حساب", "Create account")}
         </Button>
       </form>
     </AuthCard>

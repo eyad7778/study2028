@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/hooks/use-me";
 import { AccessGate, Card, Empty, fmtDate, Loading, PageTitle } from "@/components/app-ui";
 import { pageMeta } from "@/lib/meta";
+import { useText } from "@/hooks/use-preferences";
 
 export const Route = createFileRoute("/_authenticated/app/announcements")({
   head: () => pageMeta("الإعلانات", "آخر إعلانات الإدارة والدفعة."),
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/_authenticated/app/announcements")({
 
 function Announcements() {
   const me = useMe();
+  const t = useText();
   const q = useQuery({
     queryKey: ["announcements"],
     enabled: !!me.data?.hasAccess,
@@ -40,7 +42,7 @@ function Announcements() {
         { announcement_id: id, user_id: me.data.id },
         { onConflict: "announcement_id,user_id", ignoreDuplicates: true },
       );
-    if (error) toast.error("تعذّر تحديث الإعلان");
+    if (error) toast.error(t("تعذّر تحديث الإعلان", "Could not update the announcement"));
     else await q.refetch();
   }
   if (me.isLoading) return <Loading />;
@@ -49,9 +51,9 @@ function Announcements() {
   if (q.isLoading) return <Loading />;
   return (
     <div>
-      <PageTitle title="الإعلانات" />
+      <PageTitle title={t("الإعلانات", "Announcements")} />
       {(q.data ?? []).length === 0 ? (
-        <Empty title="لا توجد إعلانات" />
+        <Empty title={t("لا توجد إعلانات", "No announcements yet")} />
       ) : (
         <div className="space-y-3">
           {q.data!.map((a) => (
@@ -63,13 +65,13 @@ function Announcements() {
                 {a.pinned && <Pin className="size-3.5 text-primary" />}
                 <span className="rounded-full bg-muted px-2 py-0.5">{a.category}</span>
                 <span>{fmtDate(a.published_at)}</span>
-                <span className="ms-auto">{a.read ? "مقروء" : "غير مقروء"}</span>
+                <span className="ms-auto">{a.read ? t("مقروء", "Read") : t("غير مقروء", "Unread")}</span>
               </div>
               <h2 className="mt-2 font-bold">{a.title}</h2>
               <p className="mt-1 whitespace-pre-line text-sm leading-7">{a.body}</p>
               {!a.read && (
                 <Button className="mt-2" size="sm" variant="outline" onClick={() => markRead(a.id)}>
-                  تعليم كمقروء
+                  {t("تعليم كمقروء", "Mark as read")}
                 </Button>
               )}
             </Card>

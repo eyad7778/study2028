@@ -10,27 +10,68 @@ import {
   UserRound,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/site-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/hooks/use-me";
+import { PreferenceControls, usePreferences } from "@/hooks/use-preferences";
+import { StudentOnboarding } from "@/components/student-onboarding";
 
 export const Route = createFileRoute("/_authenticated/app")({
   component: AppLayout,
 });
 
 const nav = [
-  { to: "/app", label: "الرئيسية", icon: Home, exact: true },
-  { to: "/app/subjects", label: "المواد", icon: BookOpen },
-  { to: "/app/announcements", label: "الإعلانات", icon: Megaphone },
-  { to: "/app/schedule", label: "المواعيد", icon: CalendarClock },
-  { to: "/app/notifications", label: "الإشعارات", icon: Bell },
-  { to: "/app/subscription", label: "حسابي", icon: UserRound },
+  { to: "/app", label: "الرئيسية", englishLabel: "Home", icon: Home, exact: true },
+  { to: "/app/subjects", label: "المواد", englishLabel: "Subjects", icon: BookOpen },
+  { to: "/app/announcements", label: "الإعلانات", englishLabel: "Announcements", icon: Megaphone },
+  { to: "/app/schedule", label: "المواعيد", englishLabel: "Schedule", icon: CalendarClock },
+  { to: "/app/notifications", label: "الإشعارات", englishLabel: "Notifications", icon: Bell },
+  { to: "/app/subscription", label: "حسابي", englishLabel: "Account", icon: UserRound },
 ] as const;
 
 function AppLayout() {
   const navigate = useNavigate();
   const me = useMe();
+  const { language } = usePreferences();
+  const english = language === "en";
+  useEffect(() => {
+    const userId = me.data?.id;
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`student-notifications-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications" },
+        ({ new: row }) => {
+          if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+          const notification = row as {
+            id: string;
+            title: string;
+            body: string;
+            link: string | null;
+          };
+          const browserNotification = new Notification(notification.title, {
+            body: notification.body,
+            icon: "/favicon.ico",
+            tag: notification.id,
+          });
+          browserNotification.onclick = () => {
+            window.focus();
+            window.location.assign(
+              notification.link?.startsWith("/app") ? notification.link : "/app/notifications",
+            );
+          };
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [me.data?.id]);
   const unread = useQuery({
     queryKey: ["unread", me.data?.id],
     enabled: !!me.data,
@@ -74,11 +115,12 @@ function AppLayout() {
                 className="rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
                 activeProps={{ className: "bg-primary-soft font-semibold text-accent-foreground" }}
               >
-                {n.label}
+                {english ? n.englishLabel : n.label}
               </Link>
             ))}
           </nav>
           <div className="flex items-center gap-1">
+            <PreferenceControls />
             {me.data?.isStaff && (
               <Button variant="ghost" size="icon" asChild aria-label="الإدارة">
                 <Link to="/admin">
@@ -108,6 +150,7 @@ function AppLayout() {
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6 md:py-8">
+        <StudentOnboarding userId={me.data?.id ?? null} />
         <Outlet />
       </main>
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t bg-card md:hidden">
@@ -120,7 +163,7 @@ function AppLayout() {
             activeProps={{ className: "text-primary font-semibold" }}
           >
             <n.icon className="size-5" />
-            {n.label}
+                  {english ? n.englishLabel : n.label}
           </Link>
         ))}
       </nav>

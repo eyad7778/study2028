@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
 });
 
 const fields = [
-  ["subscription_price", "سعر الاشتراك", "number"], ["currency", "العملة", "text"], ["subscription_days", "مدة الاشتراك (أيام)", "number"],
+  ["subscription_price", "سعر الاشتراك", "number"], ["currency", "العملة", "text"],
   ["support_phone", "هاتف الدعم", "text"], ["support_telegram", "Telegram الدعم", "text"], ["support_email", "بريد الدعم", "text"],
   ["designer_name", "اسم المصمم", "text"], ["designer_contact", "تواصل المصمم", "text"],
 ] as const;
@@ -34,7 +34,7 @@ function SettingsPage() {
   useEffect(() => {
     const s = settings.data;
     if (!s) return;
-    setF(Object.fromEntries(["subscription_price", "currency", "subscription_days", "support_phone", "support_telegram", "support_email", "designer_name", "designer_contact", "designer_bio", "about_text", "payment_instructions"].map((k) => [k, String((s as Record<string, unknown>)[k] ?? "")])));
+    setF(Object.fromEntries(["subscription_price", "currency", "support_phone", "support_telegram", "support_email", "designer_name", "designer_contact", "designer_bio", "about_text", "payment_instructions"].map((k) => [k, String((s as Record<string, unknown>)[k] ?? "")])));
     setMethods(s.payment_methods);
   }, [settings.data]);
 
@@ -42,11 +42,11 @@ function SettingsPage() {
   if (!me.data?.isOwner) return <ErrorBox text="الإعدادات متاحة للمالك فقط." />;
 
   async function save() {
-    const price = Number(f["subscription_price"]), days = Number(f["subscription_days"]);
-    if (!(price >= 0) || !(days >= 1)) { toast.error("السعر والمدة يجب أن يكونا أرقامًا صحيحة"); return; }
+    const price = Number(f["subscription_price"]);
+    if (!(price >= 0)) { toast.error("السعر يجب أن يكون رقمًا صحيحًا"); return; }
     setBusy(true);
     const { error } = await supabase.from("platform_settings").update({
-      ...f, subscription_price: price, subscription_days: days,
+      ...f, subscription_price: price,
       payment_methods: methods.filter((m) => m.name.trim()) as never,
     }).eq("id", 1);
     setBusy(false);
@@ -64,6 +64,7 @@ function SettingsPage() {
             <div key={k} className="space-y-1"><Label>{l}</Label><Input type={t} dir="auto" value={f[k] ?? ""} onChange={(e) => setF({ ...f, [k]: e.target.value })} /></div>
           ))}
         </div>
+        <p className="mt-3 text-sm text-muted-foreground">مدة الاشتراك ثابتة: سنة واحدة.</p>
       </Card>
       <Card className="mt-4">
         <h2 className="font-bold">طرق الدفع</h2>

@@ -16,6 +16,7 @@ import {
   PageTitle,
 } from "@/components/app-ui";
 import { pageMeta } from "@/lib/meta";
+import { useText } from "@/hooks/use-preferences";
 
 export const Route = createFileRoute("/_authenticated/app/subjects/$id")({
   head: () => pageMeta("محاضرات المادة", "محاضرات وملفات ومواعيد المادة."),
@@ -34,6 +35,7 @@ export async function openFile(path: string) {
 function SubjectPage() {
   const { id } = Route.useParams();
   const me = useMe();
+  const t = useText();
   const q = useQuery({
     queryKey: ["subject", id],
     enabled: !!me.data?.hasAccess,
@@ -73,7 +75,7 @@ function SubjectPage() {
   if (!me.data?.hasAccess)
     return <AccessGate status={me.data?.status ?? "awaiting_payment"} linked={!!me.data?.tg} />;
   if (q.isLoading) return <Loading />;
-  if (!q.data?.subject) return <ErrorBox text="المادة غير موجودة." />;
+  if (!q.data?.subject) return <ErrorBox text={t("المادة غير موجودة.", "Subject not found.")} />;
   const { subject, lectures, events, resources } = q.data;
   return (
     <div>
@@ -81,7 +83,7 @@ function SubjectPage() {
         to="/app/subjects"
         className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground"
       >
-        <ArrowRight className="size-4" /> كل المواد
+        <ArrowRight className="size-4" /> {t("كل المواد", "All subjects")}
       </Link>
       <PageTitle
         title={subject.name}
@@ -89,18 +91,18 @@ function SubjectPage() {
       />
       {events.length > 0 && (
         <Card className="mb-4">
-          <h2 className="font-bold">مواعيد قادمة</h2>
+          <h2 className="font-bold">{t("مواعيد قادمة", "Upcoming events")}</h2>
           <ul className="mt-2 space-y-1 text-sm">
             {events.map((e) => (
               <li key={e.id}>
-                {kindLabel[e.kind]}: {e.title} · {fmtDate(e.starts_at, true)}
+                {t(kindLabel[e.kind] ?? e.kind, { lecture: "Lecture", exam: "Exam", assignment: "Assignment", other: "Event" }[e.kind] ?? e.kind)}: {e.title} · {fmtDate(e.starts_at, true)}
               </li>
             ))}
           </ul>
         </Card>
       )}
       {lectures.length === 0 ? (
-        <Empty title="لا توجد محاضرات بعد" />
+        <Empty title={t("لا توجد محاضرات بعد", "No lectures yet")} />
       ) : (
         <div className="space-y-3">
           {lectures.map((l) => (
@@ -118,13 +120,13 @@ function SubjectPage() {
                 <div className="flex gap-2">
                   {l.file_path && (
                     <Button size="sm" onClick={() => openFile(l.file_path!)}>
-                      <FileDown className="size-4" /> الملف
+                      <FileDown className="size-4" /> {t("الملف", "File")}
                     </Button>
                   )}
                   {l.external_url && (
                     <Button size="sm" variant="outline" asChild>
                       <a href={l.external_url} target="_blank" rel="noreferrer">
-                        <ExternalLink className="size-4" /> رابط
+                        <ExternalLink className="size-4" /> {t("رابط", "Link")}
                       </a>
                     </Button>
                   )}
@@ -151,10 +153,10 @@ function SubjectPage() {
                           <a href={resource.url} target="_blank" rel="noreferrer">
                             <ExternalLink className="size-4" />
                             {resource.resource_type === "video"
-                              ? "مشاهدة الفيديو"
+                              ? t("مشاهدة الفيديو", "Watch video")
                               : resource.resource_type === "pdf"
-                                ? "عرض الملف"
-                                : "فتح المورد"}
+                                ? t("عرض الملف", "View file")
+                                : t("فتح المورد", "Open resource")}
                           </a>
                         </Button>
                       </li>

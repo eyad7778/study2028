@@ -1,4 +1,4 @@
-const GATEWAY = "https://connector-gateway.lovable.dev/telegram";
+const TELEGRAM_API = "https://api.telegram.org/bot";
 
 export async function sha256Hex(input: string): Promise<string> {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
@@ -19,12 +19,11 @@ export function webhookSecret(): Promise<string> {
 }
 
 export async function tg<T = unknown>(method: string, body: Record<string, unknown> = {}): Promise<{ ok: boolean; status: number; result?: T | undefined; description?: string | undefined }> {
-  const lovable = process.env["LOVABLE_API_KEY"];
   const key = process.env["TELEGRAM_API_KEY"];
-  if (!lovable || !key) throw new Error("Telegram is not configured");
-  const res = await fetch(`${GATEWAY}/${method}`, {
+  if (!key) throw new Error("TELEGRAM_API_KEY is not configured");
+  const res = await fetch(`${TELEGRAM_API}${key}/${method}`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${lovable}`, "X-Connection-Api-Key": key, "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   const text = await res.text();

@@ -101,11 +101,6 @@ export const reviewPayment = createServerFn({ method: "POST" })
       .eq("id", data.id);
 
     if (data.approve) {
-      const { data: s } = await admin
-        .from("platform_settings")
-        .select("subscription_days")
-        .eq("id", 1)
-        .single();
       const { data: cur } = await admin
         .from("subscriptions")
         .select("status, end_at")
@@ -115,7 +110,7 @@ export const reviewPayment = createServerFn({ method: "POST" })
         cur?.status === "active" && cur.end_at && new Date(cur.end_at) > now
           ? new Date(cur.end_at)
           : now;
-      const end = new Date(base.getTime() + (s?.subscription_days ?? 120) * 86_400_000);
+      const end = new Date(base.getTime() + 365 * 86_400_000);
       await admin
         .from("subscriptions")
         .update({
@@ -170,7 +165,6 @@ export const setSubscriptionStatus = createServerFn({ method: "POST" })
       .object({
         userId: z.string().uuid(),
         status: z.enum(["active", "suspended", "expired", "awaiting_payment"]),
-        days: z.number().int().min(1).max(730).optional(),
         note: z.string().max(300).optional(),
       })
       .parse(d),
@@ -185,15 +179,10 @@ export const setSubscriptionStatus = createServerFn({ method: "POST" })
       activated_at?: string;
     } = { status: data.status };
     if (data.status === "active") {
-      const { data: s } = await admin
-        .from("platform_settings")
-        .select("subscription_days")
-        .eq("id", 1)
-        .single();
       const now = new Date();
       patch.start_at = now.toISOString();
       patch.end_at = new Date(
-        now.getTime() + (data.days ?? s?.subscription_days ?? 120) * 86_400_000,
+        now.getTime() + 365 * 86_400_000,
       ).toISOString();
       patch.activated_by = context.userId;
       patch.activated_at = now.toISOString();

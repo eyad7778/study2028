@@ -5,16 +5,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/hooks/use-me";
 import { AccessGate, Card, Empty, fmtDate, kindLabel, Loading, PageTitle } from "@/components/app-ui";
 import { pageMeta } from "@/lib/meta";
+import { useText } from "@/hooks/use-preferences";
 
 export const Route = createFileRoute("/_authenticated/app/schedule")({
   head: () => pageMeta("المواعيد", "مواعيد المحاضرات والامتحانات والتكليفات."),
   component: Schedule,
 });
 
-const tabs = [["all", "الكل"], ["lecture", "محاضرات"], ["exam", "امتحانات"], ["assignment", "تكليفات"]] as const;
+const tabs = [["all", "الكل", "All"], ["lecture", "محاضرات", "Lectures"], ["exam", "امتحانات", "Exams"], ["assignment", "تكليفات", "Assignments"]] as const;
+const kindLabelEn: Record<string, string> = { lecture: "Lecture", exam: "Exam", assignment: "Assignment", other: "Event" };
 
 function Schedule() {
   const me = useMe();
+  const t = useText();
   const [tab, setTab] = useState<string>("all");
   const q = useQuery({
     queryKey: ["events"],
@@ -27,19 +30,19 @@ function Schedule() {
   const list = (q.data ?? []).filter((e) => tab === "all" || e.kind === tab);
   return (
     <div>
-      <PageTitle title="المواعيد والامتحانات" />
+      <PageTitle title={t("المواعيد والامتحانات", "Schedule and exams")} />
       <div className="mb-4 flex flex-wrap gap-2">
-        {tabs.map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 text-sm ${tab === k ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{l}</button>
+        {tabs.map(([k, l, englishLabel]) => (
+          <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 text-sm ${tab === k ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{t(l, englishLabel)}</button>
         ))}
       </div>
-      {list.length === 0 ? <Empty title="لا توجد مواعيد قادمة" /> : (
+      {list.length === 0 ? <Empty title={t("لا توجد مواعيد قادمة", "No upcoming events")} /> : (
         <div className="space-y-3">
           {list.map((e) => (
             <Card key={e.id}>
               <div className="flex flex-wrap justify-between gap-2">
                 <div>
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${e.kind === "exam" ? "bg-destructive/10 text-destructive" : "bg-primary-soft text-primary"}`}>{kindLabel[e.kind]}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs ${e.kind === "exam" ? "bg-destructive/10 text-destructive" : "bg-primary-soft text-primary"}`}>{t(kindLabel[e.kind] ?? e.kind, kindLabelEn[e.kind] ?? e.kind)}</span>
                   <p className="mt-2 font-bold">{e.title}</p>
                   <p className="text-sm text-muted-foreground">{[(e.subjects as { name: string } | null)?.name, e.location].filter(Boolean).join(" · ")}</p>
                   {e.notes && <p className="mt-1 text-sm">{e.notes}</p>}

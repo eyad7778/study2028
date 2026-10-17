@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { statusLabel, useMe } from "@/hooks/use-me";
 import { AccessGate, Card, ErrorBox, fmtDate, kindLabel, Loading } from "@/components/app-ui";
+import { useText } from "@/hooks/use-preferences";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   head: () => ({
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/app/")({
 
 function StudentHome() {
   const me = useMe();
+  const t = useText();
   const queryClient = useQueryClient();
   const userId = me.data?.id;
   const hasAccess = me.data?.hasAccess;
@@ -119,7 +121,7 @@ function StudentHome() {
         { notification_id: notificationId, user_id: userId },
         { onConflict: "notification_id,user_id", ignoreDuplicates: true },
       );
-    if (error) toast.error("تعذّر تحديث الإشعار");
+    if (error) toast.error(t("تعذّر تحديث الإشعار", "Could not update the notification"));
     else {
       await feed.refetch();
       queryClient.invalidateQueries({ queryKey: ["unread"] });
@@ -134,7 +136,7 @@ function StudentHome() {
         { announcement_id: announcementId, user_id: userId },
         { onConflict: "announcement_id,user_id", ignoreDuplicates: true },
       );
-    if (error) toast.error("تعذّر تحديث الإعلان");
+    if (error) toast.error(t("تعذّر تحديث الإعلان", "Could not update the announcement"));
     else {
       await feed.refetch();
       queryClient.invalidateQueries({ queryKey: ["announcements"] });
@@ -145,12 +147,20 @@ function StudentHome() {
   if (!me.data) return <ErrorBox />;
   const { profile, status, tg } = me.data;
   const statusInfo = statusLabel[status];
+  const statusText = t(statusInfo.text, {
+    pending: "Under review",
+    awaiting_payment: "Awaiting payment",
+    active: "Active",
+    expired: "Expired",
+    suspended: "Suspended",
+    rejected: "Rejected",
+  }[status]);
 
   return (
     <div className="space-y-6">
       <section className="border-b pb-5">
-        <p className="text-sm text-muted-foreground">مرحبًا، {profile?.full_name || "طالب"}</p>
-        <h1 className="mt-1 text-2xl font-bold">لوحتك الدراسية</h1>
+        <p className="text-sm text-muted-foreground">{t("مرحبًا،", "Welcome,")} {profile?.full_name || t("طالب", "student")}</p>
+        <h1 className="mt-1 text-2xl font-bold">{t("لوحتك الدراسية", "Your study dashboard")}</h1>
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
           {departmentName.data && (
             <span className="rounded-full bg-primary-soft px-3 py-1 text-primary">
@@ -161,7 +171,7 @@ function StudentHome() {
             <span className="rounded-full bg-muted px-3 py-1">{profile.level}</span>
           )}
           <span className={`rounded-full px-3 py-1 ${statusInfo.cls}`}>
-            الاشتراك: {statusInfo.text}
+            {t("الاشتراك:", "Subscription:")} {statusText}
           </span>
         </div>
       </section>
@@ -171,23 +181,23 @@ function StudentHome() {
           <div className="flex items-start gap-3">
             <CircleAlert className="mt-0.5 size-5 shrink-0 text-warning" />
             <div>
-              <h2 className="font-bold">هناك خطوة مطلوبة لإظهار محتواك الدراسي</h2>
+              <h2 className="font-bold">{t("هناك خطوة مطلوبة لإظهار محتواك الدراسي", "One step is needed to unlock your study content")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {tg
-                  ? "فعّل اشتراكك لعرض المواد والمواعيد المخصصة لقسمك."
+                  ? t("فعّل اشتراكك لعرض المواد والمواعيد المخصصة لقسمك.", "Activate your subscription to view subjects and dates for your department.")
                   : status === "active"
-                    ? "اربط Telegram لإكمال الوصول."
-                    : "أكمل الاشتراك، ثم اربط Telegram من داخل المنصة."}
+                    ? t("اربط Telegram لإكمال الوصول.", "Link Telegram to finish setting up access.")
+                    : t("أكمل الاشتراك، ثم اربط Telegram من داخل المنصة.", "Activate your subscription, then link Telegram from the app.")}
               </p>
               <div className="mt-3 flex gap-2">
                 <Button size="sm" asChild>
                   <Link to={tg ? "/app/subscription" : "/app/telegram"}>
-                    {tg ? "عرض الاشتراك" : "ربط Telegram"}
+                    {tg ? t("عرض الاشتراك", "View subscription") : t("ربط Telegram", "Link Telegram")}
                   </Link>
                 </Button>
                 {!tg && (
                   <Button size="sm" variant="outline" asChild>
-                    <Link to="/app/subscription">الاشتراك</Link>
+                    <Link to="/app/subscription">{t("الاشتراك", "Subscription")}</Link>
                   </Button>
                 )}
               </div>
@@ -200,21 +210,21 @@ function StudentHome() {
       ) : feed.isLoading ? (
         <Loading />
       ) : feed.isError ? (
-        <ErrorBox text="تعذّر تحميل بيانات لوحتك. أعد المحاولة." />
+        <ErrorBox text={t("تعذّر تحميل بيانات لوحتك. أعد المحاولة.", "Could not load your dashboard. Try again.")} />
       ) : (
         <>
           <section>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-lg font-bold">
-                <BookOpen className="size-5 text-primary" /> موادي الدراسية
+                <BookOpen className="size-5 text-primary" /> {t("موادي الدراسية", "My subjects")}
               </h2>
               <Link to="/app/subjects" className="text-sm text-primary">
-                كل المواد
+                {t("كل المواد", "All subjects")}
               </Link>
             </div>
             {!feed.data?.subjects.length ? (
               <Card>
-                <p className="text-sm text-muted-foreground">لم تُضف مواد لقسمك وفرقتك بعد.</p>
+                <p className="text-sm text-muted-foreground">{t("لم تُضف مواد لقسمك وفرقتك بعد.", "No subjects are available for your department and level yet.")}</p>
               </Card>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -228,15 +238,15 @@ function StudentHome() {
                         <h3 className="font-bold">{subject.name}</h3>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {[subject.code, subject.level].filter(Boolean).join(" · ") ||
-                            "مادة دراسية"}
+                            t("مادة دراسية", "Subject")}
                         </p>
                         <p className="mt-2 text-xs text-muted-foreground">
                           {(subject.lectures as unknown as { count: number }[])?.[0]?.count ?? 0}{" "}
-                          محاضرة
+                          {t("محاضرة", "lectures")}
                         </p>
                         <Button size="sm" variant="outline" className="mt-3" asChild>
                           <Link to="/app/subjects/$id" params={{ id: subject.id }}>
-                            عرض المادة <ChevronLeft className="size-4" />
+                            {t("عرض المادة", "Open subject")} <ChevronLeft className="size-4" />
                           </Link>
                         </Button>
                       </div>
@@ -251,17 +261,17 @@ function StudentHome() {
             <section>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-lg font-bold">
-                  <Megaphone className="size-5 text-primary" /> آخر الإعلانات
+                  <Megaphone className="size-5 text-primary" /> {t("آخر الإعلانات", "Latest announcements")}
                 </h2>
                 <Link to="/app/announcements" className="text-sm text-primary">
-                  كل الإعلانات
+                  {t("كل الإعلانات", "All announcements")}
                 </Link>
               </div>
               <div className="space-y-2">
                 {!feed.data?.announcements.length && (
                   <Card>
                     <p className="text-sm text-muted-foreground">
-                      لا توجد إعلانات مخصصة لك حاليًا.
+                      {t("لا توجد إعلانات مخصصة لك حاليًا.", "There are no announcements for you yet.")}
                     </p>
                   </Card>
                 )}
@@ -274,12 +284,12 @@ function StudentHome() {
                       <div className="flex items-center gap-2">
                         {!announcement.read && (
                           <span className="rounded-full bg-primary-soft px-2 py-0.5 text-xs text-primary">
-                            جديد
+                            {t("جديد", "New")}
                           </span>
                         )}
                         {announcement.pinned && (
                           <span className="rounded bg-warning-soft px-2 py-0.5 text-xs text-warning">
-                            مهم
+                            {t("مهم", "Important")}
                           </span>
                         )}
                       </div>
@@ -290,7 +300,7 @@ function StudentHome() {
                     </p>
                     <div className="mt-1 flex items-center gap-2">
                       <Button size="sm" variant="link" className="h-auto px-0" asChild>
-                        <Link to="/app/announcements">عرض التفاصيل</Link>
+                        <Link to="/app/announcements">{t("عرض التفاصيل", "View details")}</Link>
                       </Button>
                       {!announcement.read && (
                         <Button
@@ -298,7 +308,7 @@ function StudentHome() {
                           variant="ghost"
                           onClick={() => markAnnouncementRead(announcement.id)}
                         >
-                          تعليم كمقروء
+                          {t("تعليم كمقروء", "Mark as read")}
                         </Button>
                       )}
                     </div>
@@ -309,23 +319,23 @@ function StudentHome() {
             <section>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-lg font-bold">
-                  <CalendarClock className="size-5 text-primary" /> الامتحانات والمواعيد القادمة
+                  <CalendarClock className="size-5 text-primary" /> {t("الامتحانات والمواعيد القادمة", "Upcoming exams and events")}
                 </h2>
                 <Link to="/app/schedule" className="text-sm text-primary">
-                  كل المواعيد
+                  {t("كل المواعيد", "All dates")}
                 </Link>
               </div>
               <Card>
                 <ul className="divide-y">
                   {!feed.data?.events.length && (
-                    <li className="py-3 text-sm text-muted-foreground">لا توجد مواعيد قادمة.</li>
+                    <li className="py-3 text-sm text-muted-foreground">{t("لا توجد مواعيد قادمة.", "No upcoming events.")}</li>
                   )}
                   {feed.data?.events.map((event) => (
                     <li key={event.id} className="flex items-center justify-between gap-3 py-3">
                       <div>
                         <p className="font-semibold">{event.title}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          {kindLabel[event.kind]}
+                          {t(kindLabel[event.kind] ?? event.kind, { lecture: "Lecture", exam: "Exam", assignment: "Assignment", other: "Event" }[event.kind] ?? event.kind)}
                           {(event.subjects as { name: string } | null)?.name
                             ? ` · ${(event.subjects as { name: string }).name}`
                             : ""}
@@ -345,17 +355,17 @@ function StudentHome() {
             <section>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-lg font-bold">
-                  <FileText className="size-5 text-primary" /> أحدث الموارد
+                  <FileText className="size-5 text-primary" /> {t("أحدث الموارد", "Latest resources")}
                 </h2>
                 <Link to="/app/subjects" className="text-sm text-primary">
-                  المواد
+                  {t("المواد", "Subjects")}
                 </Link>
               </div>
               <Card>
                 <ul className="divide-y">
                   {!feed.data?.resources.length && (
                     <li className="py-3 text-sm text-muted-foreground">
-                      لا توجد ملفات أو روابط جديدة بعد.
+                      {t("لا توجد ملفات أو روابط جديدة بعد.", "No new files or links yet.")}
                     </li>
                   )}
                   {feed.data?.resources.map((resource) => (
@@ -369,7 +379,7 @@ function StudentHome() {
                       </div>
                       <Button size="sm" variant="outline" asChild>
                         <a href={resource.url} target="_blank" rel="noreferrer">
-                          <ExternalLink className="size-4" /> فتح
+                          <ExternalLink className="size-4" /> {t("فتح", "Open")}
                         </a>
                       </Button>
                     </li>
@@ -380,16 +390,16 @@ function StudentHome() {
             <section>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-lg font-bold">
-                  <Bell className="size-5 text-primary" /> إشعاراتك
+                  <Bell className="size-5 text-primary" /> {t("إشعاراتك", "Your notifications")}
                 </h2>
                 <Link to="/app/notifications" className="text-sm text-primary">
-                  كل الإشعارات
+                  {t("كل الإشعارات", "All notifications")}
                 </Link>
               </div>
               <Card>
                 <ul className="divide-y">
                   {!feed.data?.notifications.length && (
-                    <li className="py-3 text-sm text-muted-foreground">لا توجد إشعارات جديدة.</li>
+                    <li className="py-3 text-sm text-muted-foreground">{t("لا توجد إشعارات جديدة.", "No new notifications.")}</li>
                   )}
                   {feed.data?.notifications.map((notification) => (
                     <li
@@ -412,7 +422,7 @@ function StudentHome() {
                       </div>
                       {!notification.read && (
                         <Button size="sm" variant="ghost" onClick={() => markRead(notification.id)}>
-                          مقروء
+                          {t("مقروء", "Read")}
                         </Button>
                       )}
                     </li>

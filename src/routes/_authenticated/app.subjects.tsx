@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/hooks/use-me";
 import { AccessGate, Card, Empty, Loading, PageTitle } from "@/components/app-ui";
 import { pageMeta } from "@/lib/meta";
+import { useText } from "@/hooks/use-preferences";
 
 export const Route = createFileRoute("/_authenticated/app/subjects")({
   head: () => pageMeta("المواد", "المواد الدراسية ومحاضراتها وملفاتها."),
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/_authenticated/app/subjects")({
 
 function Subjects() {
   const me = useMe();
+  const t = useText();
   const q = useQuery({
     queryKey: ["subjects"],
     enabled: !!me.data?.hasAccess,
@@ -24,8 +26,8 @@ function Subjects() {
   const list = q.data ?? [];
   return (
     <div>
-      <PageTitle title="المواد الدراسية" subtitle="اختر مادة لعرض محاضراتها وملفاتها." />
-      {list.length === 0 ? <Empty title="لا توجد مواد بعد" /> : (
+      <PageTitle title={t("المواد الدراسية", "Subjects")} subtitle={t("اختر مادة لعرض محاضراتها وملفاتها.", "Choose a subject to view its lectures and files.")} />
+      {list.length === 0 ? <Empty title={t("لا توجد مواد بعد", "No subjects yet")} /> : (
         <div className="grid gap-3 sm:grid-cols-2">
           {list.map((s) => (
             <Link key={s.id} to="/app/subjects/$id" params={{ id: s.id }}>
@@ -35,7 +37,7 @@ function Subjects() {
                   <div>
                     <p className="font-bold">{s.name}</p>
                     <p className="text-xs text-muted-foreground">{[s.code, s.level, s.term].filter(Boolean).join(" · ")}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{(s.lectures as unknown as { count: number }[])?.[0]?.count ?? 0} محاضرة</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{(s.lectures as unknown as { count: number }[])?.[0]?.count ?? 0} {t("محاضرة", "lectures")}</p>
                   </div>
                 </div>
               </Card>

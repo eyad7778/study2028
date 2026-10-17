@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/hooks/use-me";
 import { Card, Empty, fmtDate, Loading, PageTitle } from "@/components/app-ui";
 import { pageMeta } from "@/lib/meta";
+import { useText } from "@/hooks/use-preferences";
 
 export const Route = createFileRoute("/_authenticated/app/notifications")({
   head: () => pageMeta("الإشعارات", "كل الإشعارات التي وصلتك."),
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/_authenticated/app/notifications")({
 
 function Notifications() {
   const me = useMe();
+  const t = useText();
   const qc = useQueryClient();
   const q = useQuery({
     queryKey: ["notifications"],
@@ -37,8 +39,8 @@ function Notifications() {
   const list = q.data ?? [];
   return (
     <div>
-      <PageTitle title="الإشعارات" action={list.some((x) => !x.read) && <Button variant="outline" size="sm" onClick={markAll}>تعليم الكل كمقروء</Button>} />
-      {list.length === 0 ? <Empty title="لا توجد إشعارات" /> : (
+      <PageTitle title={t("الإشعارات", "Notifications")} action={list.some((x) => !x.read) && <Button variant="outline" size="sm" onClick={markAll}>{t("تعليم الكل كمقروء", "Mark all as read")}</Button>} />
+      {list.length === 0 ? <Empty title={t("لا توجد إشعارات", "No notifications yet")} /> : (
         <div className="space-y-2">
           {list.map((n) => (
             <Card key={n.id} className={n.read ? "opacity-70" : "border-primary"}>
@@ -47,7 +49,7 @@ function Notifications() {
                 <span className="text-xs text-muted-foreground">{fmtDate(n.created_at, true)}</span>
               </div>
               <p className="mt-1 whitespace-pre-line text-sm">{n.body}</p>
-              {n.link?.startsWith("/app") && <Link to={n.link} className="mt-2 inline-block text-sm text-primary">عرض</Link>}
+              {n.link?.startsWith("/app") && <Link to={n.link} className="mt-2 inline-block text-sm text-primary">{t("عرض", "Open")}</Link>}
             </Card>
           ))}
         </div>
