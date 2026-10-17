@@ -6,6 +6,7 @@ import { useSettings } from "@/hooks/use-settings";
 import { usePreferences } from "@/hooks/use-preferences";
 import { useSession } from "@/hooks/use-session";
 import hero from "@/assets/hero.jpg";
+import designerPhoto from "@/assets/designer-photo.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -121,6 +122,28 @@ function Index() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b bg-card px-4 py-12 md:py-16">
+        <div className="mx-auto grid max-w-5xl items-center gap-8 sm:grid-cols-[minmax(180px,260px)_1fr] sm:gap-12">
+          <img
+            src={designerPhoto}
+            alt={english ? "Smart Student designer" : "مصمم تطبيق Smart Student"}
+            width={1067}
+            height={1280}
+            className="mx-auto aspect-[4/5] w-full max-w-56 rounded-2xl border bg-muted object-cover shadow-card sm:mx-0"
+          />
+          <div>
+            <p className="text-sm font-semibold text-primary">{english ? "Meet the designer" : "عن المصمم"}</p>
+            <h2 className="mt-2 text-2xl font-bold">{s?.designer_name || (english ? "Smart Student designer" : "مصمم Smart Student")}</h2>
+            <p className="mt-3 max-w-xl leading-7 text-muted-foreground">
+              {english ? "A student-focused platform designed to bring study resources and updates together." : s?.designer_bio || "منصة طلابية تجمع المواد والإعلانات والمواعيد في تجربة واحدة منظمة."}
+            </p>
+            <Button asChild variant="outline" className="mt-5">
+              <Link to="/designer">{english ? "About the designer" : "اعرف المزيد عن المصمم"}</Link>
+            </Button>
           </div>
         </div>
       </section>
