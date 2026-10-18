@@ -71,15 +71,27 @@ export function StudentOnboarding({ userId }: { userId: string | null }) {
           if (!publicKey) return;
           const registration = await navigator.serviceWorker.getRegistration();
           const subscription = await registration?.pushManager.getSubscription();
-          if (subscription) setPushState("enabled");
-          else {
+          if (subscription) {
+            const keys = subscription.toJSON().keys;
+            if (!keys?.p256dh || !keys.auth) throw new Error("Could not read the browser push keys.");
+            await saveSubscription({ data: {
+              endpoint: subscription.endpoint,
+              keys: { p256dh: keys.p256dh, auth: keys.auth },
+            } });
+            setPushState("enabled");
+          } else {
             setStep(steps.length - 1);
             setOpen(true);
           }
         })
-        .catch(() => undefined);
+        .catch((error) => {
+          setPushState("error");
+          setPushError(error instanceof Error ? error.message : "Could not connect device notifications.");
+          setStep(steps.length - 1);
+          setOpen(true);
+        });
     }
-  }, [getConfig, userId]);
+  }, [getConfig, saveSubscription, userId]);
 
   const current = steps[step] ?? steps[0]!;
   const permissionGranted = permission === "granted" || permission === "unsupported";
